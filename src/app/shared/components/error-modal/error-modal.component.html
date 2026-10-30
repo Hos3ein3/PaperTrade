@@ -1,0 +1,134 @@
+@if (errorService.isModalOpen() && errorService.activeModalError(); as err) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200">
+    <div
+      class="glass-card w-full max-w-lg p-6 sm:p-7 rounded-2xl shadow-2xl border border-white/20 relative animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col"
+      role="dialog"
+      aria-modal="true"
+    >
+      <!-- Top Close Button -->
+      <button
+        type="button"
+        (click)="close()"
+        class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer p-1 transition-colors"
+        title="Dismiss dialog (Esc)"
+      >
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <!-- Header with Status Badge & Glowing Icon -->
+      <div class="flex items-start gap-4 mb-4">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border" [class]="err.badgeClass">
+          <i [class]="err.icon" class="text-xl"></i>
+        </div>
+
+        <div class="flex-1 pr-6">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border font-mono" [class]="err.badgeClass">
+              HTTP {{ err.code > 0 ? err.code : 'OFFLINE' }}
+            </span>
+            @if (err.correlationId) {
+              <span class="text-[10px] font-mono text-slate-500 truncate max-w-[150px]">
+                {{ err.correlationId }}
+              </span>
+            }
+          </div>
+          <h3 class="text-lg font-black tracking-tight text-slate-900 dark:text-white">
+            {{ err.title }}
+          </h3>
+        </div>
+      </div>
+
+      <!-- Body / Message -->
+      <div class="space-y-3 flex-1 overflow-y-auto pr-1">
+        <p class="text-xs font-medium text-slate-700 dark:text-slate-200 leading-relaxed">
+          {{ err.message }}
+        </p>
+
+        @if (err.description) {
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+            {{ err.description }}
+          </p>
+        }
+
+        <!-- Technical Diagnostics Accordion (Respects environment.features.showErrorTraces) -->
+        @if (err.technicalDetails && showErrorTraces) {
+          <div class="pt-1">
+            <button
+              type="button"
+              (click)="toggleDetails()"
+              class="text-[11px] font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 cursor-pointer py-1"
+            >
+              <i class="fa-solid" [class.fa-chevron-right]="!showTechnicalDetails()" [class.fa-chevron-down]="showTechnicalDetails()"></i>
+              <span>{{ showTechnicalDetails() ? 'Hide Technical Diagnostics' : 'Show Technical Diagnostics & Trace' }}</span>
+            </button>
+
+            @if (showTechnicalDetails()) {
+              <div class="mt-2 p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px] text-rose-300 max-h-48 overflow-auto select-all">
+                <pre class="whitespace-pre-wrap break-all">{{ formatDetails(err.technicalDetails) }}</pre>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="flex flex-wrap items-center justify-between gap-3 pt-4 mt-4 border-t border-slate-200 dark:border-white/10">
+        <div class="flex items-center gap-2">
+          @if (err.technicalDetails && showErrorTraces) {
+            <button
+              type="button"
+              (click)="copyDiagnostics()"
+              class="px-2.5 py-1.5 rounded-xl text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 transition-all cursor-pointer flex items-center gap-1.5"
+              title="Copy diagnostics to clipboard"
+            >
+              <i class="fa-solid fa-copy text-xs"></i>
+              Copy Trace
+            </button>
+          }
+
+          <button
+            type="button"
+            (click)="openFullPage()"
+            class="px-2.5 py-1.5 rounded-xl text-[11px] font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors cursor-pointer"
+          >
+            Full Page View
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2">
+          @if (err.secondaryAction) {
+            <button
+              type="button"
+              (click)="executeSecondary()"
+              class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 transition-all cursor-pointer"
+            >
+              @if (err.secondaryAction.icon) {
+                <i [class]="err.secondaryAction.icon" class="mr-1.5"></i>
+              }
+              {{ err.secondaryAction.label }}
+            </button>
+          }
+
+          @if (err.primaryAction) {
+            <app-glass-button
+              variant="primary"
+              size="md"
+              [icon]="err.primaryAction.icon || 'fa-solid fa-arrow-right'"
+              (clicked)="executePrimary()"
+            >
+              {{ err.primaryAction.label }}
+            </app-glass-button>
+          } @else {
+            <app-glass-button
+              variant="primary"
+              size="md"
+              (clicked)="close()"
+            >
+              Dismiss
+            </app-glass-button>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

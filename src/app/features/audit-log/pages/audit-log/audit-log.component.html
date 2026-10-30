@@ -1,0 +1,410 @@
+<div class="space-y-6 animate-in fade-in duration-300">
+  <!-- Title & Top Actions -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
+        <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-teal-400 text-white shadow-glow-cyan">
+          <i class="fa-solid fa-list-check text-base"></i>
+        </span>
+        Security Audit Trail
+      </h1>
+      <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">
+        Immutable user activity ledger, operational telemetry, and administrative actions
+      </p>
+    </div>
+
+    <div class="flex items-center gap-2.5">
+      <button
+        type="button"
+        (click)="openPurgeModal()"
+        class="glass-button px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500/10 cursor-pointer transition-all flex items-center gap-2"
+      >
+        <i class="fa-solid fa-fire text-xs"></i>
+        Admin Purge
+      </button>
+
+      <button
+        type="button"
+        (click)="loadLogs()"
+        class="glass-button px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-800 dark:text-white border border-slate-300 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 cursor-pointer transition-all flex items-center gap-2"
+        [disabled]="isLoading()"
+      >
+        <i class="fa-solid fa-rotate text-xs" [class.fa-spin]="isLoading()"></i>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Metric Summary Cards -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="glass-card p-4 rounded-2xl flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-500 flex items-center justify-center shrink-0">
+        <i class="fa-solid fa-fingerprint text-lg"></i>
+      </div>
+      <div>
+        <p class="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Total Audit Events</p>
+        <p class="text-xl font-black text-slate-900 dark:text-white mt-0.5">{{ totalCount() | number }}</p>
+      </div>
+    </div>
+
+    <div class="glass-card p-4 rounded-2xl flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0">
+        <i class="fa-solid fa-circle-check text-lg"></i>
+      </div>
+      <div>
+        <p class="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Success Rate</p>
+        <p class="text-xl font-black text-emerald-500 mt-0.5">
+          {{ logs().length > 0 ? ((successCount() / logs().length) * 100 | number:'1.0-1') : 100 }}%
+        </p>
+      </div>
+    </div>
+
+    <div class="glass-card p-4 rounded-2xl flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-500 flex items-center justify-center shrink-0">
+        <i class="fa-solid fa-gauge-high text-lg"></i>
+      </div>
+      <div>
+        <p class="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Avg Latency</p>
+        <p class="text-xl font-black text-slate-900 dark:text-white mt-0.5">{{ avgDurationMs() }} ms</p>
+      </div>
+    </div>
+
+    <div class="glass-card p-4 rounded-2xl flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
+        <i class="fa-solid fa-users text-lg"></i>
+      </div>
+      <div>
+        <p class="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Available Users</p>
+        <p class="text-xl font-black text-slate-900 dark:text-white mt-0.5">{{ availableUsers().length }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Toolbar & Ledger Card -->
+  <div class="glass-card p-4 rounded-2xl space-y-4">
+    <!-- Filter Row -->
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Action Type Filter -->
+        <div class="flex items-center gap-1.5 text-xs">
+          <span class="text-slate-600 dark:text-slate-400 font-medium">Action:</span>
+          <select
+            [(ngModel)]="selectedActionType"
+            (change)="pageNumber = 1; loadLogs()"
+            class="glass-input px-3 py-1.5 rounded-xl text-xs text-slate-900 dark:text-white"
+          >
+            <option value="">All Action Types</option>
+            <option value="Auth">Auth & Sessions</option>
+            <option value="Trading">Trading & Orders</option>
+            <option value="Crypto">Crypto Terminal</option>
+            <option value="Forex">Forex Trades</option>
+            <option value="Profile">Profile & Security</option>
+            <option value="Admin">Administration</option>
+          </select>
+        </div>
+
+        <!-- User Filter -->
+        @if (availableUsers().length > 0) {
+          <div class="flex items-center gap-1.5 text-xs">
+            <span class="text-slate-600 dark:text-slate-400 font-medium">User:</span>
+            <select
+              [(ngModel)]="selectedUserId"
+              (change)="pageNumber = 1; loadLogs()"
+              class="glass-input px-3 py-1.5 rounded-xl text-xs text-slate-900 dark:text-white max-w-[180px]"
+            >
+              <option value="">All Users</option>
+              @for (u of availableUsers(); track u.id) {
+                <option [value]="u.id">{{ u.email || u.userName }}</option>
+              }
+            </select>
+          </div>
+        }
+      </div>
+
+      <!-- Free-text Search -->
+      <div class="relative min-w-[240px]">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (keyup.enter)="pageNumber = 1; loadLogs()"
+          placeholder="Search action, email, IP..."
+          class="glass-input w-full pl-9 pr-3 py-1.5 rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400"
+        />
+      </div>
+    </div>
+
+    <!-- Audit Ledger Table -->
+    <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-white/10">
+      <table class="w-full text-left text-xs text-slate-700 dark:text-slate-200">
+        <thead class="bg-slate-100/90 dark:bg-white/5 uppercase text-[10px] font-bold text-slate-600 dark:text-slate-400 tracking-wider">
+          <tr>
+            <th class="py-3 px-4">Timestamp (CET)</th>
+            <th class="py-3 px-4">User / Actor</th>
+            <th class="py-3 px-4">Action Type</th>
+            <th class="py-3 px-4">Operation Name</th>
+            <th class="py-3 px-4">Status</th>
+            <th class="py-3 px-4">Duration</th>
+            <th class="py-3 px-4">Client IP</th>
+            <th class="py-3 px-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200/70 dark:divide-white/5">
+          @for (log of logs(); track log.id) {
+            <tr class="hover:bg-slate-100/60 dark:hover:bg-white/[0.03] transition-colors">
+              <!-- Timestamp CET -->
+              <td class="py-3 px-4 font-mono text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                {{ log.timestamp | cetDate }}
+              </td>
+
+              <!-- User / Actor -->
+              <td class="py-3 px-4">
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-full bg-slate-200 dark:bg-white/10 flex items-center justify-center text-[10px] font-bold text-slate-700 dark:text-slate-200">
+                    {{ (log.userEmail || 'U').charAt(0).toUpperCase() }}
+                  </div>
+                  <div>
+                    <p class="font-medium text-slate-900 dark:text-white truncate max-w-[140px]" [title]="log.userEmail || 'System'">
+                      {{ log.userEmail || 'System / Anonymous' }}
+                    </p>
+                    @if (log.impersonatedByAdminId) {
+                      <span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-500 font-semibold">
+                        Impersonated
+                      </span>
+                    }
+                  </div>
+                </div>
+              </td>
+
+              <!-- Action Type -->
+              <td class="py-3 px-4">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border" [class]="getActionBadgeColor(log.actionType)">
+                  {{ log.actionType }}
+                </span>
+              </td>
+
+              <!-- Operation Name -->
+              <td class="py-3 px-4 font-mono font-medium text-slate-900 dark:text-white">
+                <span class="truncate max-w-[200px] block" [title]="log.actionName">{{ log.actionName }}</span>
+              </td>
+
+              <!-- Status -->
+              <td class="py-3 px-4">
+                @if (log.isSuccess) {
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                    <i class="fa-solid fa-check text-[9px]"></i> Success
+                  </span>
+                } @else {
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20" [title]="log.errorMessage || 'Failed'">
+                    <i class="fa-solid fa-xmark text-[9px]"></i> Error
+                  </span>
+                }
+              </td>
+
+              <!-- Duration -->
+              <td class="py-3 px-4 font-mono text-slate-500">
+                {{ log.executionDurationMs }}ms
+              </td>
+
+              <!-- IP -->
+              <td class="py-3 px-4 font-mono text-[11px] text-slate-500">
+                {{ log.ipAddress || '—' }}
+              </td>
+
+              <!-- Actions -->
+              <td class="py-3 px-4 text-right whitespace-nowrap">
+                <div class="inline-flex items-center gap-2">
+                  <button
+                    type="button"
+                    (click)="inspectLog(log)"
+                    class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-xs font-semibold cursor-pointer transition-all"
+                    title="Inspect Execution Payload"
+                  >
+                    <i class="fa-solid fa-eye mr-1"></i> Inspect
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="deleteSingleLog(log.id)"
+                    class="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 cursor-pointer transition-all"
+                    title="Delete Entry"
+                  >
+                    <i class="fa-solid fa-trash-can text-xs"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="text-center py-10 text-slate-500 dark:text-slate-400">
+                <i class="fa-solid fa-shield-halved text-3xl mb-2 text-slate-400"></i>
+                <p class="font-medium text-xs">No audit logs matching search criteria.</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Detail / Payload Modal -->
+  @if (isDetailModalOpen()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md">
+      <div class="glass-card w-full max-w-3xl p-6 rounded-2xl shadow-2xl border border-white/20 relative animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
+        <!-- Close Button -->
+        <button
+          type="button"
+          (click)="closeDetailModal()"
+          class="absolute top-4 right-4 text-slate-400 hover:text-slate-200 cursor-pointer p-1"
+        >
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+
+        <!-- Header -->
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center">
+            <i class="fa-solid fa-file-shield text-lg"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">{{ selectedLog()?.actionName }}</h3>
+            <p class="text-xs text-slate-500 font-mono">{{ selectedLog()?.actionType }} • {{ selectedLog()?.timestamp | cetDate }}</p>
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-hidden flex flex-col space-y-3">
+          <!-- Metadata strip -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <div class="p-2.5 rounded-xl bg-slate-200/80 dark:bg-white/5">
+              <span class="text-[10px] text-slate-500 block uppercase font-bold">User</span>
+              <span class="font-mono text-slate-800 dark:text-slate-200 truncate block">{{ selectedLog()?.userEmail || 'System' }}</span>
+            </div>
+
+            <div class="p-2.5 rounded-xl bg-slate-200/80 dark:bg-white/5">
+              <span class="text-[10px] text-slate-500 block uppercase font-bold">Status</span>
+              <span class="font-semibold block" [class]="selectedLog()?.isSuccess ? 'text-emerald-500' : 'text-rose-500'">
+                {{ selectedLog()?.isSuccess ? 'Success' : 'Failed' }}
+              </span>
+            </div>
+
+            <div class="p-2.5 rounded-xl bg-slate-200/80 dark:bg-white/5">
+              <span class="text-[10px] text-slate-500 block uppercase font-bold">Latency</span>
+              <span class="font-mono text-slate-800 dark:text-slate-200 block">{{ selectedLog()?.executionDurationMs }}ms</span>
+            </div>
+
+            <div class="p-2.5 rounded-xl bg-slate-200/80 dark:bg-white/5">
+              <span class="text-[10px] text-slate-500 block uppercase font-bold">IP Address</span>
+              <span class="font-mono text-slate-800 dark:text-slate-200 block">{{ selectedLog()?.ipAddress || '—' }}</span>
+            </div>
+          </div>
+
+          <!-- Error details if failed -->
+          @if (selectedLog()?.errorMessage) {
+            <div class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-mono">
+              <strong>Error Message:</strong> {{ selectedLog()?.errorMessage }}
+            </div>
+          }
+
+          <!-- Payload Code Block -->
+          <div class="flex-1 overflow-auto bg-slate-950 rounded-xl p-4 border border-slate-800 font-mono text-xs text-cyan-300 select-all">
+            <pre>{{ formatJson(selectedLog()?.payload) }}</pre>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-between pt-4 mt-2 border-t border-slate-200 dark:border-white/10">
+          <button
+            type="button"
+            (click)="copyPayload()"
+            class="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-slate-800 dark:text-white cursor-pointer transition-all flex items-center gap-2"
+          >
+            <i class="fa-solid fa-copy"></i>
+            Copy Payload
+          </button>
+
+          <button
+            type="button"
+            (click)="closeDetailModal()"
+            class="px-4 py-2 rounded-xl text-xs font-semibold bg-brand-600 text-white hover:bg-brand-500 cursor-pointer transition-all"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Admin Purge Modal -->
+  @if (isPurgeModalOpen()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md">
+      <div class="glass-card w-full max-w-md p-6 rounded-2xl shadow-2xl border border-white/20 relative animate-in fade-in zoom-in-95 duration-200">
+        <button
+          type="button"
+          (click)="closePurgeModal()"
+          class="absolute top-4 right-4 text-slate-400 hover:text-slate-200 cursor-pointer p-1"
+        >
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+            <i class="fa-solid fa-fire text-lg"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">Admin Audit Log Purge</h3>
+            <p class="text-xs text-slate-500">Purge records by date interval or purge entire ledger</p>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">From Date (Optional)</label>
+            <input
+              type="datetime-local"
+              [(ngModel)]="purgeFromDate"
+              class="glass-input w-full px-3 py-2 rounded-xl text-xs text-slate-900 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">To Date (Optional)</label>
+            <input
+              type="datetime-local"
+              [(ngModel)]="purgeToDate"
+              class="glass-input w-full px-3 py-2 rounded-xl text-xs text-slate-900 dark:text-white"
+            />
+          </div>
+
+          <div class="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-white/10">
+            <button
+              type="button"
+              (click)="executePurgeAll()"
+              [disabled]="isPurging()"
+              class="px-3.5 py-2 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 cursor-pointer transition-all"
+            >
+              Purge ALL Records
+            </button>
+
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                (click)="closePurgeModal()"
+                class="px-3 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-white/5 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                (click)="executePurgeRange()"
+                [disabled]="isPurging()"
+                class="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white cursor-pointer transition-all flex items-center gap-2"
+              >
+                <i class="fa-solid fa-trash-can text-xs" [class.fa-spin]="isPurging()"></i>
+                Purge Range
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

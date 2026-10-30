@@ -1,0 +1,885 @@
+<div class="space-y-8 pb-16 max-w-7xl mx-auto">
+  <!-- Showcase Page Header -->
+  <div class="glass-card glass-specular p-6 flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-brand-500/20 text-brand-700 dark:text-brand-400 border border-brand-500/30">
+          Design System & UI Library
+        </span>
+        <span class="text-xs text-slate-500 dark:text-slate-400">· Senior UI/UX Components</span>
+      </div>
+      <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight mt-1">
+        Universal UI Components Showcase
+      </h1>
+      <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+        Living documentation & reusable widgets for forms, validation, tables, pickers, tags, wizards, and skeletons.
+      </p>
+    </div>
+
+    <!-- Category Switcher Group Tab -->
+    <div class="flex items-center bg-slate-100 dark:bg-white/5 p-1 rounded-xl border border-slate-200/80 dark:border-white/10 text-xs font-bold">
+      <button
+        type="button"
+        (click)="activeCategory.set('all')"
+        class="px-3 py-1.5 rounded-lg transition-all"
+        [ngClass]="activeCategory() === 'all' ? 'bg-brand-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'"
+      >
+        All Components
+      </button>
+      <button
+        type="button"
+        (click)="activeCategory.set('forms')"
+        class="px-3 py-1.5 rounded-lg transition-all"
+        [ngClass]="activeCategory() === 'forms' ? 'bg-brand-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'"
+      >
+        Form Inputs
+      </button>
+      <button
+        type="button"
+        (click)="activeCategory.set('tables')"
+        class="px-3 py-1.5 rounded-lg transition-all"
+        [ngClass]="activeCategory() === 'tables' ? 'bg-brand-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'"
+      >
+        Table & Pagination
+      </button>
+      <button
+        type="button"
+        (click)="activeCategory.set('wizard')"
+        class="px-3 py-1.5 rounded-lg transition-all"
+        [ngClass]="activeCategory() === 'wizard' ? 'bg-brand-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'"
+      >
+        Wizard & Feedback
+      </button>
+    </div>
+  </div>
+
+  <!-- SECTION 1: LABELS & INPUT VALIDATION STATES (Input, Input with error, warning, success, label with *, label with !) -->
+  @if (activeCategory() === 'all' || activeCategory() === 'forms') {
+    <div class="glass-card p-6 space-y-6">
+      <div class="border-b border-slate-200/80 dark:border-white/10 pb-3 flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+            <i class="fa-solid fa-i-cursor text-brand-500"></i>
+            <span>Inputs & Validation States</span>
+          </h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            Form labels with required asterisk (*), hover information tooltips (!), and contextual input states.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- 1. Standard Input with Required Asterisk (*) -->
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
+            Full Legal Name <span class="text-rose-500 font-black ml-0.5" title="Required field">*</span>
+          </label>
+          <div class="relative">
+            <i class="fa-solid fa-user absolute left-3 top-3 text-xs text-slate-400"></i>
+            <input
+              type="text"
+              [(ngModel)]="standardInput"
+              class="glass-input w-full pl-9 pr-3 py-2 rounded-xl text-xs text-slate-900 dark:text-white font-medium"
+              placeholder="e.g. John Doe"
+            />
+          </div>
+          <span class="text-[10px] text-slate-500 block">Standard input with required mark</span>
+        </div>
+
+        <!-- 2. Input with Success State -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+              Verified Trader Email <span class="text-rose-500 font-black">*</span>
+            </label>
+            <!-- Label with ! mark which shows hint on hover -->
+            <div class="relative group cursor-pointer">
+              <span class="w-4 h-4 rounded-full bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300 font-bold text-[10px] flex items-center justify-center">
+                !
+              </span>
+              <div class="hidden group-hover:block absolute right-0 bottom-full mb-1 w-48 p-2 rounded-lg bg-slate-900 text-white text-[10px] shadow-xl z-30 font-normal leading-tight">
+                Used for instant settlement notices and 2FA authentication codes.
+              </div>
+            </div>
+          </div>
+          <div class="relative">
+            <i class="fa-solid fa-envelope absolute left-3 top-3 text-xs text-emerald-500"></i>
+            <input
+              type="email"
+              [(ngModel)]="successInput"
+              class="glass-input w-full pl-9 pr-8 py-2 rounded-xl text-xs text-emerald-900 dark:text-emerald-200 border-emerald-500/80 focus:ring-emerald-500/30 bg-emerald-500/5 font-semibold"
+            />
+            <i class="fa-solid fa-circle-check absolute right-3 top-3 text-xs text-emerald-500"></i>
+          </div>
+          <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold block flex items-center gap-1">
+            <i class="fa-solid fa-check text-[9px]"></i> Email address verified and active
+          </span>
+        </div>
+
+        <!-- 3. Input with Warning State -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-bold text-amber-700 dark:text-amber-400">
+              API Secret Key
+            </label>
+            <!-- Label with ! mark which shows hint on hover -->
+            <div class="relative group cursor-pointer">
+              <span class="w-4 h-4 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold text-[10px] flex items-center justify-center">
+                !
+              </span>
+              <div class="hidden group-hover:block absolute right-0 bottom-full mb-1 w-48 p-2 rounded-lg bg-slate-900 text-white text-[10px] shadow-xl z-30 font-normal leading-tight">
+                Warning: Secret key expires in 7 days. Rotate soon to avoid interruption.
+              </div>
+            </div>
+          </div>
+          <div class="relative">
+            <i class="fa-solid fa-key absolute left-3 top-3 text-xs text-amber-500"></i>
+            <input
+              type="text"
+              [(ngModel)]="warningInput"
+              class="glass-input w-full pl-9 pr-8 py-2 rounded-xl text-xs text-amber-900 dark:text-amber-200 border-amber-500/80 focus:ring-amber-500/30 bg-amber-500/5 font-mono"
+            />
+            <i class="fa-solid fa-triangle-exclamation absolute right-3 top-3 text-xs text-amber-500"></i>
+          </div>
+          <span class="text-[10px] text-amber-600 dark:text-amber-400 font-bold block flex items-center gap-1">
+            <i class="fa-solid fa-triangle-exclamation text-[9px]"></i> Key complexity below recommended rating
+          </span>
+        </div>
+
+        <!-- 4. Input with Error State -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-bold text-rose-700 dark:text-rose-400">
+              Contract Address <span class="text-rose-500 font-black">*</span>
+            </label>
+            <!-- Label with ! mark which shows hint on hover -->
+            <div class="relative group cursor-pointer">
+              <span class="w-4 h-4 rounded-full bg-rose-500/20 text-rose-700 dark:text-rose-300 font-bold text-[10px] flex items-center justify-center">
+                !
+              </span>
+              <div class="hidden group-hover:block absolute right-0 bottom-full mb-1 w-48 p-2 rounded-lg bg-slate-900 text-white text-[10px] shadow-xl z-30 font-normal leading-tight">
+                Must be a valid hex address starting with 0x (42 characters).
+              </div>
+            </div>
+          </div>
+          <div class="relative">
+            <i class="fa-solid fa-link-slash absolute left-3 top-3 text-xs text-rose-500"></i>
+            <input
+              type="text"
+              [(ngModel)]="errorInput"
+              class="glass-input w-full pl-9 pr-8 py-2 rounded-xl text-xs text-rose-900 dark:text-rose-200 border-rose-500/80 focus:ring-rose-500/30 bg-rose-500/5 font-mono font-bold"
+            />
+            <i class="fa-solid fa-circle-exclamation absolute right-3 top-3 text-xs text-rose-500"></i>
+          </div>
+          <span class="text-[10px] text-rose-600 dark:text-rose-400 font-bold block flex items-center gap-1">
+            <i class="fa-solid fa-circle-xmark text-[9px]"></i> Invalid address format: must begin with '0x'
+          </span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- SECTION 2: CONTROLS (Switch, Checkbox, Radio Group, Group Tab) -->
+  @if (activeCategory() === 'all' || activeCategory() === 'forms') {
+    <div class="glass-card p-6 space-y-6">
+      <div class="border-b border-slate-200/80 dark:border-white/10 pb-3">
+        <h2 class="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+          <i class="fa-solid fa-toggle-on text-brand-500"></i>
+          <span>Interactive Toggles, Radios &amp; Checkboxes</span>
+        </h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400">
+          Stateful switch buttons, grouped tabs, custom radio cards, and multi-state checkboxes.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- 1. Switch Toggles (iOS Glass Style) -->
+        <div class="space-y-3">
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
+            Switch Controls (iOS Style)
+          </label>
+          <div class="space-y-2.5">
+            <label class="flex items-center justify-between p-2 rounded-xl bg-slate-100/80 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 cursor-pointer">
+              <span class="text-xs font-medium text-slate-800 dark:text-slate-200">Algorithmic Execution</span>
+              <div
+                (click)="switchState = !switchState"
+                class="w-11 h-6 rounded-full transition-colors relative cursor-pointer"
+                [ngClass]="switchState ? 'bg-brand-600' : 'bg-slate-300 dark:bg-slate-700'"
+              >
+                <div
+                  class="w-5 h-5 rounded-full bg-white absolute top-0.5 left-0.5 transition-transform shadow-sm"
+                  [ngClass]="switchState ? 'translate-x-5' : 'translate-x-0'"
+                ></div>
+              </div>
+            </label>
+
+            <label class="flex items-center justify-between p-2 rounded-xl bg-slate-100/80 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 cursor-pointer">
+              <span class="text-xs font-medium text-slate-800 dark:text-slate-200">Push Notifications</span>
+              <div
+                (click)="darkThemeSwitch = !darkThemeSwitch"
+                class="w-11 h-6 rounded-full transition-colors relative cursor-pointer"
+                [ngClass]="darkThemeSwitch ? 'bg-emerald-600' : 'bg-slate-300 dark:bg-slate-700'"
+              >
+                <div
+                  class="w-5 h-5 rounded-full bg-white absolute top-0.5 left-0.5 transition-transform shadow-sm"
+                  [ngClass]="darkThemeSwitch ? 'translate-x-5' : 'translate-x-0'"
+                ></div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- 2. Checkboxes -->
+        <div class="space-y-3">
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
+            Checkbox Controls
+          </label>
+          <div class="space-y-2 p-3 rounded-2xl bg-slate-100/80 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
+            <label class="flex items-center gap-2.5 text-xs text-slate-800 dark:text-slate-200 cursor-pointer">
+              <input
+                type="checkbox"
+                [(ngModel)]="checkbox1"
+                class="rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500 w-4 h-4 cursor-pointer"
+              />
+              <span class="font-medium">Enable Stop Loss protection</span>
+            </label>
+
+            <label class="flex items-center gap-2.5 text-xs text-slate-800 dark:text-slate-200 cursor-pointer">
+              <input
+                type="checkbox"
+                [(ngModel)]="checkbox2"
+                class="rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500 w-4 h-4 cursor-pointer"
+              />
+              <span class="font-medium">Auto-rebalance collateral</span>
+            </label>
+
+            <label class="flex items-center gap-2.5 text-xs text-slate-800 dark:text-slate-200 cursor-pointer">
+              <input
+                type="checkbox"
+                [checked]="checkboxIndeterminate"
+                (change)="checkboxIndeterminate = !checkboxIndeterminate"
+                class="rounded border-slate-300 dark:border-slate-700 text-amber-500 focus:ring-amber-500 w-4 h-4 cursor-pointer"
+              />
+              <span class="font-medium">Multi-tenant isolation</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 3. Group Tab Segmented Control -->
+        <div class="space-y-3">
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
+            Group Tab (Segmented Control)
+          </label>
+          <div class="p-1 rounded-xl bg-slate-100/90 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 flex items-center">
+            @for (tab of ['daily', 'weekly', 'monthly', 'yearly']; track tab) {
+              <button
+                type="button"
+                (click)="activeGroupTab.set($any(tab))"
+                class="flex-1 py-1.5 rounded-lg text-xs font-bold capitalize transition-all cursor-pointer text-center"
+                [ngClass]="activeGroupTab() === tab
+                  ? 'bg-brand-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'"
+              >
+                {{ tab }}
+              </button>
+            }
+          </div>
+          <span class="text-[10px] text-slate-500 font-mono block">
+            Selected Tab: <b>{{ activeGroupTab() }}</b>
+          </span>
+        </div>
+
+        <!-- 4. Radio Group Cards -->
+        <div class="space-y-2">
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
+            Radio Group Cards
+          </label>
+          <div class="space-y-1.5">
+            @for (opt of radioOptions; track opt.value) {
+              <label
+                (click)="selectedRadio = opt.value"
+                class="flex items-start gap-2.5 p-2 rounded-xl border transition-all cursor-pointer"
+                [ngClass]="selectedRadio === opt.value
+                  ? 'bg-brand-500/10 border-brand-500/40 text-brand-900 dark:text-brand-300 shadow-2xs'
+                  : 'bg-slate-100/60 dark:bg-white/5 border-slate-200/80 dark:border-white/10 hover:border-slate-300'"
+              >
+                <input
+                  type="radio"
+                  name="demoRadioGroup"
+                  [value]="opt.value"
+                  [checked]="selectedRadio === opt.value"
+                  class="mt-0.5 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                />
+                <div>
+                  <div class="text-xs font-bold">{{ opt.label }}</div>
+                  <div class="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">{{ opt.desc }}</div>
+                </div>
+              </label>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- SECTION 3: PICKERS (Date, Time, DateTime, Tags, Textarea, File Input) -->
+  @if (activeCategory() === 'all' || activeCategory() === 'forms') {
+    <div class="glass-card p-6 space-y-6">
+      <div class="border-b border-slate-200/80 dark:border-white/10 pb-3">
+        <h2 class="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+          <i class="fa-solid fa-calendar-days text-brand-500"></i>
+          <span>Pickers, Tags, Textarea &amp; File Upload</span>
+        </h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400">
+          Date/Time controls, multi-tag chip inputs, character-counted textareas, and drag-and-drop file uploader.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- 1. Date, Time, DateTime Pickers -->
+        <div class="space-y-3">
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
+            Date &amp; Time Pickers
+          </label>
+          <div class="space-y-2.5">
+            <!-- Date Picker -->
+            <div>
+              <span class="text-[11px] font-semibold text-slate-500 block mb-1">Date Picker</span>
+              <div class="relative">
+                <i class="fa-solid fa-calendar absolute left-3 top-2.5 text-xs text-slate-400"></i>
+                <input
+                  type="date"
+                  [(ngModel)]="selectedDate"
+                  class="glass-input w-full pl-9 pr-3 py-1.5 rounded-xl text-xs text-slate-900 dark:text-white font-mono font-bold"
+                />
+              </div>
+            </div>
+
+            <!-- Time Picker -->
+            <div>
+              <span class="text-[11px] font-semibold text-slate-500 block mb-1">Time Picker</span>
+              <div class="relative">
+                <i class="fa-solid fa-clock absolute left-3 top-2.5 text-xs text-slate-400"></i>
+                <input
+                  type="time"
+                  [(ngModel)]="selectedTime"
+                  class="glass-input w-full pl-9 pr-3 py-1.5 rounded-xl text-xs text-slate-900 dark:text-white font-mono font-bold"
+                />
+              </div>
+            </div>
+
+            <!-- DateTime Picker -->
+            <div>
+              <span class="text-[11px] font-semibold text-slate-500 block mb-1">DateTime Combined Picker</span>
+              <div class="relative">
+                <i class="fa-solid fa-business-time absolute left-3 top-2.5 text-xs text-slate-400"></i>
+                <input
+                  type="datetime-local"
+                  [(ngModel)]="selectedDateTime"
+                  class="glass-input w-full pl-9 pr-3 py-1.5 rounded-xl text-xs text-slate-900 dark:text-white font-mono font-bold"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Tag Input & Textarea -->
+        <div class="space-y-4">
+          <!-- Tag Input -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
+              Interactive Tag Input (Chips)
+            </label>
+            <div class="p-2 rounded-xl bg-slate-100/80 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 space-y-2">
+              <div class="flex flex-wrap gap-1.5">
+                @for (tag of tags(); track tag; let idx = $index) {
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-bold bg-brand-500/15 text-brand-700 dark:text-brand-300 border border-brand-500/25">
+                    <span>{{ tag }}</span>
+                    <button
+                      type="button"
+                      (click)="removeTag(idx)"
+                      class="hover:text-rose-500 cursor-pointer ml-1"
+                    >
+                      <i class="fa-solid fa-xmark text-[10px]"></i>
+                    </button>
+                  </span>
+                }
+              </div>
+              <div class="flex items-center gap-2">
+                <input
+                  type="text"
+                  [(ngModel)]="newTagInput"
+                  (keyup.enter)="addTag()"
+                  placeholder="Type tag & press Enter..."
+                  class="glass-input flex-1 px-3 py-1 rounded-lg text-xs"
+                />
+                <button
+                  type="button"
+                  (click)="addTag()"
+                  class="px-2.5 py-1 rounded-lg text-xs font-bold bg-brand-600 hover:bg-brand-500 text-white cursor-pointer"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Textarea with Character Counter -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between items-center">
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                Textarea with Character Limit
+              </label>
+              <span class="text-[10px] font-mono text-slate-500">
+                {{ textareaText.length }} / {{ maxChars }}
+              </span>
+            </div>
+            <textarea
+              [(ngModel)]="textareaText"
+              [maxlength]="maxChars"
+              rows="3"
+              class="glass-input w-full p-2.5 rounded-xl text-xs text-slate-900 dark:text-white leading-relaxed resize-none"
+              placeholder="Enter strategy description..."
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- 3. Drag & Drop File Input -->
+        <div class="space-y-2">
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
+            Input for File (Drag &amp; Drop)
+          </label>
+          <div
+            class="p-4 rounded-2xl border-2 border-dashed border-slate-300 dark:border-white/20 hover:border-brand-500 text-center space-y-2 transition-colors cursor-pointer bg-slate-100/50 dark:bg-white/5 relative"
+          >
+            <input
+              type="file"
+              multiple
+              (change)="onFileSelected($event)"
+              class="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+            />
+            <div class="w-10 h-10 rounded-2xl bg-brand-500/10 text-brand-500 mx-auto flex items-center justify-center text-lg">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <div>
+              <span class="text-xs font-bold text-slate-900 dark:text-white block">Drop files here or click to browse</span>
+              <span class="text-[10px] text-slate-500">Supports JSON, CSV, PDF up to 10MB</span>
+            </div>
+          </div>
+
+          <!-- Uploaded Files List -->
+          <div class="space-y-1.5 pt-1">
+            @for (f of uploadedFiles(); track f.name; let idx = $index) {
+              <div class="flex items-center justify-between p-2 rounded-xl bg-slate-100/80 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-xs font-mono">
+                <div class="flex items-center gap-2 truncate pr-2">
+                  <i class="fa-solid fa-file-code text-brand-500 text-sm"></i>
+                  <div class="truncate">
+                    <span class="font-bold text-slate-900 dark:text-white truncate block">{{ f.name }}</span>
+                    <span class="text-[10px] text-slate-500 block">{{ f.size }}</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  (click)="removeFile(idx)"
+                  class="text-slate-400 hover:text-rose-500 p-1 transition-colors cursor-pointer"
+                  title="Remove file"
+                >
+                  <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- SECTION 4: BUTTON VARIANTS & SKELETON LOADER (Different kinds of button, skeleton loader) -->
+  @if (activeCategory() === 'all' || activeCategory() === 'wizard') {
+    <div class="glass-card p-6 space-y-6">
+      <div class="border-b border-slate-200/80 dark:border-white/10 pb-3 flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+            <i class="fa-solid fa-cube text-brand-500"></i>
+            <span>Button Variants &amp; Skeleton Loaders</span>
+          </h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            Senior-grade UI button states (primary, secondary, bullish, bearish, ghost, loading, disabled) and animated shimmer skeletons.
+          </p>
+        </div>
+        <button
+          type="button"
+          (click)="showSkeletonDemo.set(!showSkeletonDemo())"
+          class="text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline cursor-pointer"
+        >
+          {{ showSkeletonDemo() ? 'Toggle Loaded View' : 'Toggle Skeleton Shimmer' }}
+        </button>
+      </div>
+
+      <!-- Button Variants Grid -->
+      <div class="space-y-3">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-500 block">Different Kinds of Button</span>
+        <div class="flex flex-wrap items-center gap-3">
+          <app-glass-button variant="primary" size="md">
+            <i class="fa-solid fa-bolt mr-1.5"></i> Primary Action
+          </app-glass-button>
+
+          <app-glass-button variant="secondary" size="md">
+            Secondary Action
+          </app-glass-button>
+
+          <button
+            type="button"
+            class="px-4 py-2 rounded-xl text-xs font-black text-white bg-emerald-600 hover:bg-emerald-500 shadow-glow-bullish transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <i class="fa-solid fa-arrow-trend-up"></i>
+            <span>Bullish / Success</span>
+          </button>
+
+          <button
+            type="button"
+            class="px-4 py-2 rounded-xl text-xs font-black text-white bg-rose-600 hover:bg-rose-500 shadow-glow-bearish transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <i class="fa-solid fa-arrow-trend-down"></i>
+            <span>Bearish / Danger</span>
+          </button>
+
+          <button
+            type="button"
+            class="px-4 py-2 rounded-xl text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>Warning Button</span>
+          </button>
+
+          <button
+            type="button"
+            class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-white/10 transition-all cursor-pointer"
+          >
+            Ghost Button
+          </button>
+
+          <app-glass-button variant="primary" size="md" [loading]="true">
+            Loading State
+          </app-glass-button>
+
+          <button
+            type="button"
+            disabled
+            class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 bg-slate-200/50 dark:bg-white/5 border border-slate-300/40 dark:border-white/5 opacity-50 cursor-not-allowed"
+          >
+            Disabled State
+          </button>
+        </div>
+      </div>
+
+      <!-- Skeleton Loader Shimmer Demo -->
+      <div class="space-y-3 pt-4 border-t border-slate-200/80 dark:border-white/10">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-500 block">
+          Skeleton Loader Placeholders (Shimmer Simulation)
+        </span>
+        @if (showSkeletonDemo()) {
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 animate-pulse">
+            <!-- Skeleton Card 1 -->
+            <div class="p-4 rounded-2xl bg-slate-200/70 dark:bg-white/5 border border-slate-200 dark:border-white/5 space-y-3">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-slate-300 dark:bg-white/10"></div>
+                <div class="space-y-1.5 flex-1">
+                  <div class="h-3 bg-slate-300 dark:bg-white/10 rounded-md w-3/4"></div>
+                  <div class="h-2.5 bg-slate-300 dark:bg-white/10 rounded-md w-1/2"></div>
+                </div>
+              </div>
+              <div class="space-y-2 pt-2">
+                <div class="h-2.5 bg-slate-300 dark:bg-white/10 rounded-md w-full"></div>
+                <div class="h-2.5 bg-slate-300 dark:bg-white/10 rounded-md w-5/6"></div>
+              </div>
+            </div>
+
+            <!-- Skeleton Card 2 -->
+            <div class="p-4 rounded-2xl bg-slate-200/70 dark:bg-white/5 border border-slate-200 dark:border-white/5 space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="h-3 bg-slate-300 dark:bg-white/10 rounded-md w-1/3"></div>
+                <div class="h-5 bg-slate-300 dark:bg-white/10 rounded-full w-12"></div>
+              </div>
+              <div class="h-8 bg-slate-300 dark:bg-white/10 rounded-xl w-full"></div>
+              <div class="h-2.5 bg-slate-300 dark:bg-white/10 rounded-md w-2/3"></div>
+            </div>
+
+            <!-- Skeleton Card 3 -->
+            <div class="p-4 rounded-2xl bg-slate-200/70 dark:bg-white/5 border border-slate-200 dark:border-white/5 space-y-3">
+              <div class="h-3 bg-slate-300 dark:bg-white/10 rounded-md w-1/2"></div>
+              <div class="space-y-2">
+                <div class="h-2.5 bg-slate-300 dark:bg-white/10 rounded-md w-full"></div>
+                <div class="h-2.5 bg-slate-300 dark:bg-white/10 rounded-md w-4/5"></div>
+                <div class="h-2.5 bg-slate-300 dark:bg-white/10 rounded-md w-3/5"></div>
+              </div>
+            </div>
+          </div>
+        } @else {
+          <div class="p-4 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-xs text-brand-700 dark:text-brand-300 font-bold">
+            Real data loaded successfully. Toggle button above to see the shimmer skeleton again.
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- SECTION 5: MULTI-STEP WIZARD FORM -->
+  @if (activeCategory() === 'all' || activeCategory() === 'wizard') {
+    <div class="glass-card p-6 space-y-6">
+      <div class="border-b border-slate-200/80 dark:border-white/10 pb-3">
+        <h2 class="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+          <i class="fa-solid fa-wand-magic-sparkles text-brand-500"></i>
+          <span>Multi-Step Wizard Form</span>
+        </h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400">
+          Step-by-step onboarding and strategy wizard with progress tracks, stage validation, and state persistence.
+        </p>
+      </div>
+
+      <!-- Step Indicator Bar -->
+      <div class="grid grid-cols-4 gap-2 text-center text-xs">
+        @for (stepNum of [1, 2, 3, 4]; track stepNum) {
+          <div
+            class="p-2.5 rounded-xl border transition-all"
+            [ngClass]="wizardStep() === stepNum
+              ? 'bg-brand-500/15 border-brand-500/50 text-brand-700 dark:text-brand-300 font-black shadow-xs'
+              : (wizardStep() > stepNum ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 font-bold' : 'bg-slate-100/60 dark:bg-white/5 border-slate-200/60 text-slate-400')"
+          >
+            <div class="flex items-center justify-center gap-1.5">
+              @if (wizardStep() > stepNum) {
+                <i class="fa-solid fa-check text-emerald-500 text-xs"></i>
+              } @else {
+                <span class="w-4 h-4 rounded-full border border-current text-[10px] flex items-center justify-center">
+                  {{ stepNum }}
+                </span>
+              }
+              <span class="hidden sm:inline">
+                {{ stepNum === 1 ? 'Account' : (stepNum === 2 ? 'Risk Model' : (stepNum === 3 ? 'Leverage' : 'Complete')) }}
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Active Wizard Step Contents -->
+      <div class="p-6 rounded-2xl bg-slate-100/60 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 min-h-[160px] flex flex-col justify-center">
+        @if (wizardStep() === 1) {
+          <div class="space-y-3 max-w-md">
+            <h4 class="font-bold text-sm text-slate-900 dark:text-white">Step 1: Account Specification</h4>
+            <div class="space-y-1">
+              <label class="text-xs font-bold text-slate-600 dark:text-slate-300">Workspace / Strategy Name <span class="text-rose-500">*</span></label>
+              <input type="text" [(ngModel)]="wizardData.accountName" class="glass-input w-full p-2 rounded-xl text-xs" />
+            </div>
+          </div>
+        } @else if (wizardStep() === 2) {
+          <div class="space-y-3 max-w-md">
+            <h4 class="font-bold text-sm text-slate-900 dark:text-white">Step 2: Risk Tolerance Matrix</h4>
+            <div class="grid grid-cols-3 gap-2">
+              @for (risk of ['Conservative', 'Balanced', 'Aggressive']; track risk) {
+                <button
+                  type="button"
+                  (click)="wizardData.riskTolerance = risk"
+                  class="p-2.5 rounded-xl border text-xs font-bold transition-all"
+                  [ngClass]="wizardData.riskTolerance === risk ? 'bg-brand-600 text-white border-brand-500 shadow-xs' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10'"
+                >
+                  {{ risk }}
+                </button>
+              }
+            </div>
+          </div>
+        } @else if (wizardStep() === 3) {
+          <div class="space-y-3 max-w-md">
+            <h4 class="font-bold text-sm text-slate-900 dark:text-white">Step 3: Margin &amp; Leverage Multiplier</h4>
+            <div class="flex items-center justify-between text-xs">
+              <span>Max Permitted Leverage:</span>
+              <span class="font-mono font-bold text-brand-600 text-sm">{{ wizardData.maxLeverage }}x</span>
+            </div>
+            <input
+              type="range"
+              min="1"
+              max="100"
+              [(ngModel)]="wizardData.maxLeverage"
+              class="w-full accent-brand-500 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-lg"
+            />
+          </div>
+        } @else {
+          <div class="text-center py-4 space-y-2">
+            <div class="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 mx-auto flex items-center justify-center text-xl">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h4 class="font-bold text-sm text-slate-900 dark:text-white">Wizard Successfully Completed!</h4>
+            <p class="text-xs text-slate-500">
+              Strategy <b>{{ wizardData.accountName }}</b> configured with {{ wizardData.riskTolerance }} profile and {{ wizardData.maxLeverage }}x leverage.
+            </p>
+          </div>
+        }
+      </div>
+
+      <!-- Wizard Navigation Controls -->
+      <div class="flex items-center justify-between pt-2">
+        <button
+          type="button"
+          [disabled]="wizardStep() === 1"
+          (click)="prevWizardStep()"
+          class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+        >
+          Previous Step
+        </button>
+
+        @if (wizardStep() < 4) {
+          <button
+            type="button"
+            (click)="nextWizardStep()"
+            class="px-5 py-2 rounded-xl text-xs font-black bg-brand-600 hover:bg-brand-500 text-white shadow-glow-brand cursor-pointer"
+          >
+            Next Step <i class="fa-solid fa-arrow-right ml-1"></i>
+          </button>
+        } @else {
+          <button
+            type="button"
+            (click)="resetWizard()"
+            class="px-5 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer"
+          >
+            <i class="fa-solid fa-rotate-left mr-1"></i> Restart Wizard
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- SECTION 6: TABLE WITH SORTING, FILTERING & PAGINATION -->
+  @if (activeCategory() === 'all' || activeCategory() === 'tables') {
+    <div class="glass-card p-6 space-y-4">
+      <div class="border-b border-slate-200/80 dark:border-white/10 pb-3 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+            <i class="fa-solid fa-table text-brand-500"></i>
+            <span>Table with Sorting, Filtering &amp; Pagination</span>
+          </h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            Interactive enterprise data table with clickable header sorting, multi-attribute filtering, and page controls.
+          </p>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-400"></i>
+            <input
+              type="text"
+              [(ngModel)]="tableSearch"
+              placeholder="Filter names, emails, roles..."
+              class="glass-input pl-8 pr-3 py-1.5 rounded-xl text-xs"
+            />
+          </div>
+
+          <select
+            [(ngModel)]="tableStatusFilter"
+            class="glass-input px-3 py-1.5 rounded-xl text-xs bg-white dark:bg-slate-900 font-bold"
+          >
+            <option value="">All Statuses</option>
+            <option value="Active">Active</option>
+            <option value="Pending">Pending</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Data Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs font-mono">
+          <thead>
+            <tr class="text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-white/10 uppercase text-[10px] font-black font-sans">
+              <th (click)="setSort('id')" class="py-2.5 px-3 cursor-pointer hover:text-brand-500">
+                ID <i class="fa-solid fa-sort ml-1 text-slate-400"></i>
+              </th>
+              <th (click)="setSort('name')" class="py-2.5 px-3 cursor-pointer hover:text-brand-500">
+                Trader Name <i class="fa-solid fa-sort ml-1 text-slate-400"></i>
+              </th>
+              <th (click)="setSort('email')" class="py-2.5 px-3 cursor-pointer hover:text-brand-500">
+                Email Address <i class="fa-solid fa-sort ml-1 text-slate-400"></i>
+              </th>
+              <th (click)="setSort('role')" class="py-2.5 px-3 cursor-pointer hover:text-brand-500">
+                Role <i class="fa-solid fa-sort ml-1 text-slate-400"></i>
+              </th>
+              <th class="py-2.5 px-3">Status</th>
+              <th (click)="setSort('balance')" class="py-2.5 px-3 text-right cursor-pointer hover:text-brand-500">
+                Account Balance <i class="fa-solid fa-sort ml-1 text-slate-400"></i>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200/60 dark:divide-white/5">
+            @for (user of paginatedTableData(); track user.id) {
+              <tr class="hover:bg-slate-100/70 dark:hover:bg-white/5 transition-colors">
+                <td class="py-2.5 px-3 font-bold text-slate-500">#{{ user.id }}</td>
+                <td class="py-2.5 px-3 font-bold text-slate-900 dark:text-white font-sans">{{ user.name }}</td>
+                <td class="py-2.5 px-3 text-slate-600 dark:text-slate-300">{{ user.email }}</td>
+                <td class="py-2.5 px-3 font-sans">
+                  <span class="px-2 py-0.5 rounded-md bg-slate-200/80 dark:bg-white/10 text-slate-700 dark:text-slate-300 font-medium text-[11px]">
+                    {{ user.role }}
+                  </span>
+                </td>
+                <td class="py-2.5 px-3">
+                  <span
+                    class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase font-mono"
+                    [ngClass]="user.status === 'Active' ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400' : (user.status === 'Pending' ? 'bg-amber-500/20 text-amber-700 dark:text-amber-400' : 'bg-slate-200 dark:bg-white/10 text-slate-500')"
+                  >
+                    {{ user.status }}
+                  </span>
+                </td>
+                <td class="py-2.5 px-3 text-right font-black text-slate-900 dark:text-white">
+                  \${{ user.balance | number:'1.2-2' }}
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="py-8 text-center text-slate-500 font-sans">
+                  No records matching search query.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Component Controls -->
+      <div class="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-slate-200/80 dark:border-white/10 text-xs font-mono">
+        <span class="text-slate-500">
+          Showing <b>{{ paginatedTableData().length }}</b> of <b>{{ filteredTableData().length }}</b> records (Page {{ currentPage() }} of {{ totalPages() }})
+        </span>
+
+        <div class="flex items-center gap-1">
+          <button
+            type="button"
+            [disabled]="currentPage() === 1"
+            (click)="currentPage.set(currentPage() - 1)"
+            class="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+          >
+            <i class="fa-solid fa-chevron-left text-[10px]"></i>
+          </button>
+
+          @for (page of [1, 2]; track page) {
+            <button
+              type="button"
+              (click)="currentPage.set(page)"
+              class="w-7 h-7 rounded-lg text-xs font-bold transition-all cursor-pointer"
+              [ngClass]="currentPage() === page ? 'bg-brand-600 text-white shadow-xs' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300'"
+            >
+              {{ page }}
+            </button>
+          }
+
+          <button
+            type="button"
+            [disabled]="currentPage() >= totalPages()"
+            (click)="currentPage.set(currentPage() + 1)"
+            class="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+          >
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

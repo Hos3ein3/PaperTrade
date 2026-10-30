@@ -1,0 +1,66 @@
+<div class="glass-card flex flex-col h-full overflow-hidden p-4">
+  <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-200/80 dark:border-white/10">
+    <div class="flex items-center gap-2">
+      <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+        <i class="fa-solid fa-clock text-amber-500 dark:text-amber-400"></i>
+        Working Orders
+      </h3>
+      <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-400">
+        {{ state.pendingOrders().length }}
+      </span>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto -mx-4 px-4">
+    <table class="w-full text-left text-xs font-mono">
+      <thead>
+        <tr class="text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-white/10 uppercase tracking-wider text-[11px]">
+          <th class="py-2 font-semibold">Instrument</th>
+          <th class="py-2 font-semibold">Side / Type</th>
+          <th class="py-2 font-semibold">Size</th>
+          <th class="py-2 font-semibold">Order Price</th>
+          <th class="py-2 font-semibold">Placed Date</th>
+          <th class="py-2 font-semibold text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-200/60 dark:divide-white/5">
+        @for (ord of state.pendingOrders(); track ord.id) {
+          <tr class="hover:bg-slate-100/70 dark:hover:bg-white/5 transition-colors">
+            <td class="py-3 font-bold text-slate-900 dark:text-white font-sans">{{ ord.symbol }}</td>
+            <td class="py-3">
+              <div class="flex items-center gap-1.5">
+                <app-glass-badge [variant]="ord.side === TradingOrderSide.Buy ? 'bullish' : 'bearish'">
+                  {{ ord.side === TradingOrderSide.Buy ? 'BUY' : 'SELL' }}
+                </app-glass-badge>
+                <span class="text-slate-600 dark:text-slate-400 font-medium">
+                  {{ ord.orderType === TradingOrderType.Limit ? 'LIMIT' : 'STOP' }}
+                </span>
+              </div>
+            </td>
+            <td class="py-3 text-slate-800 dark:text-slate-200 font-medium">{{ ord.quantity | number:'1.2-4' }}</td>
+            <td class="py-3 font-bold text-brand-600 dark:text-brand-400">\${{ ord.price || ord.triggerPrice | number:'1.2-4' }}</td>
+            <td class="py-3 text-slate-600 dark:text-slate-400 text-[11px]">{{ ord.placedAtUtc | date:'short' }}</td>
+            <td class="py-3 text-right">
+              <button
+                type="button"
+                (click)="state.cancelOrder({ orderId: ord.id, symbol: ord.symbol })"
+                class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-rose-50 hover:text-rose-700 text-slate-700 border border-slate-200 dark:bg-white/5 dark:hover:bg-rose-500/20 dark:text-slate-400 dark:hover:text-rose-300 dark:border-white/10 transition-colors text-xs font-semibold"
+              >
+                Cancel
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="py-8 text-center text-slate-500 dark:text-slate-400 font-sans">
+              <div class="flex flex-col items-center justify-center gap-2">
+                <i class="fa-solid fa-list-check text-2xl text-slate-400 dark:text-slate-600"></i>
+                <p class="text-xs">No pending orders in the queue.</p>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

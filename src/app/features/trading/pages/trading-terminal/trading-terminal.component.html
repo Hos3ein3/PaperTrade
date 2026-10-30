@@ -1,0 +1,143 @@
+<div class="space-y-4">
+  <!-- Terminal Live Ticker Ribbon -->
+  <div class="glass-card glass-specular px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center gap-6">
+      <!-- Active Symbol & Asset Class -->
+      <div class="flex items-center gap-3">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">{{ state.selectedSymbol() }}</h2>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-700 dark:text-brand-300 border border-brand-500/30">
+              {{ state.selectedQuote()!.assetName }}
+            </span>
+            <!-- Live API or Simulate API Badge -->
+            <span
+              class="text-[9px] font-mono font-black uppercase px-2 py-0.5 rounded-md border"
+              [ngClass]="state.selectedQuote()!.isSimulated
+                ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/25'
+                : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/25'"
+            >
+              {{ state.selectedQuote()!.isSimulated ? 'Simulate API' : 'Live API' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Price & 24h Change -->
+      <div class="flex items-baseline gap-2 font-mono">
+        <span class="text-2xl font-black text-slate-900 dark:text-white">
+          \${{ state.selectedQuote()!.price | number:'1.2-4' }}
+        </span>
+        <span
+          class="text-xs font-bold px-1.5 py-0.5 rounded"
+          [ngClass]="state.selectedQuote()!.changePercent24h >= 0 ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/15' : 'text-rose-700 dark:text-rose-400 bg-rose-500/15'"
+        >
+          {{ state.selectedQuote()!.changePercent24h >= 0 ? '+' : '' }}{{ state.selectedQuote()!.changePercent24h | number:'1.2-2' }}%
+        </span>
+      </div>
+
+      <!-- 24h High, Low, Volume Stats -->
+      <div class="hidden md:flex items-center gap-6 text-xs font-mono text-slate-600 dark:text-slate-400 border-l border-slate-200/80 dark:border-white/10 pl-6">
+        <div>
+          <span class="block text-[10px] uppercase text-slate-500 font-semibold">24h High</span>
+          <span class="text-slate-900 dark:text-slate-200 font-semibold">\${{ state.selectedQuote()!.high24h | number:'1.2-4' }}</span>
+        </div>
+        <div>
+          <span class="block text-[10px] uppercase text-slate-500 font-semibold">24h Low</span>
+          <span class="text-slate-900 dark:text-slate-200 font-semibold">\${{ state.selectedQuote()!.low24h | number:'1.2-4' }}</span>
+        </div>
+        <div>
+          <span class="block text-[10px] uppercase text-slate-500 font-semibold">24h Vol</span>
+          <span class="text-slate-900 dark:text-slate-200 font-semibold">\${{ state.selectedQuote()!.volume24h / 1000000 | number:'1.1-1' }}M</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Quick Actions -->
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        (click)="state.toggleWatchlist(state.selectedQuote()!.symbol, state.selectedQuote()!.assetName, state.selectedQuote()!.assetClass)"
+        class="p-2 rounded-xl border border-slate-200/80 dark:border-white/10 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-white/5 dark:hover:bg-white/10 dark:text-slate-400 transition-colors cursor-pointer"
+        [ngClass]="state.selectedQuote()!.isWatchlisted ? 'text-amber-500 dark:text-amber-400' : 'text-slate-500'"
+        title="Toggle Watchlist"
+      >
+        <i class="fa-solid fa-star"></i>
+      </button>
+
+      <app-glass-button
+        variant="secondary"
+        size="sm"
+        icon="fa-solid fa-rotate-left"
+        (clicked)="showResetDialog.set(true)"
+      >
+        Reset Capital
+      </app-glass-button>
+    </div>
+  </div>
+
+  <!-- Main Trading Workspace Grid (TradingView Chart Made Bigger + Order Ticket) -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+    <!-- Big Professional TradingView & Canvas Chart (Desktop: 8-9 cols, 580px Height) -->
+    <div class="lg:col-span-8 xl:col-span-9 h-[580px]">
+      <app-candlestick-chart [symbol]="state.selectedSymbol()" />
+    </div>
+
+    <!-- Right Side Order Ticket Rail (Desktop: 4-3 cols) -->
+    <div class="lg:col-span-4 xl:col-span-3 flex flex-col">
+      <app-order-ticket />
+    </div>
+  </div>
+
+  <!-- Bottom Workspace: Level 2 Order Book + Portfolio Positions/Orders Strip -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+    <!-- Level 2 Order Book Panel (Relocated Below Chart: 4 cols) -->
+    <div class="lg:col-span-4 min-h-[380px]">
+      <app-order-book [currentPrice]="state.selectedQuote()!.price" />
+    </div>
+
+    <!-- Positions & Orders Monitor Panel (8 cols) -->
+    <div class="lg:col-span-8 space-y-4">
+      <div class="flex items-center gap-2 border-b border-slate-200/80 dark:border-white/10 pb-2">
+        <button
+          type="button"
+          (click)="activeBottomTab.set('positions')"
+          class="px-4 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer"
+          [ngClass]="activeBottomTab() === 'positions' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white'"
+        >
+          <i class="fa-solid fa-crosshairs"></i>
+          Active Positions ({{ state.openPositions().length }})
+        </button>
+
+        <button
+          type="button"
+          (click)="activeBottomTab.set('orders')"
+          class="px-4 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer"
+          [ngClass]="activeBottomTab() === 'orders' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white'"
+        >
+          <i class="fa-solid fa-clock"></i>
+          Working Orders ({{ state.pendingOrders().length }})
+        </button>
+      </div>
+
+      @if (activeBottomTab() === 'positions') {
+        <app-positions-table (modifyClicked)="openModifyModal($event)" />
+      } @else {
+        <app-orders-table />
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Modals -->
+<app-modify-position-dialog
+  [isOpen]="showModifyDialog()"
+  [position]="selectedPosition()"
+  (closed)="showModifyDialog.set(false)"
+/>
+
+<app-balance-reset-dialog
+  [isOpen]="showResetDialog()"
+  (closed)="showResetDialog.set(false)"
+/>

@@ -1,0 +1,154 @@
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="glass-card glass-specular p-5 flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-brand-500/20 text-brand-700 dark:text-brand-400 border border-brand-500/30">
+          Asset Custody & Tracking
+        </span>
+        <span class="text-xs text-slate-600 dark:text-slate-400">· Real-time Spot Portfolio</span>
+      </div>
+      <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">Crypto Portfolio & Price Alerts</h1>
+      <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+        Holdings valuation, dynamic allocation weightings, and multi-channel trigger alerts.
+      </p>
+    </div>
+
+    <app-glass-button
+      variant="primary"
+      icon="fa-solid fa-bell"
+      size="sm"
+      (clicked)="showAlertModal.set(true)"
+    >
+      Create Price Alert
+    </app-glass-button>
+  </div>
+
+  <!-- Main Layout: Holdings (8 cols) + Alerts (4 cols) -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Holdings Table -->
+    <div class="lg:col-span-8 glass-card p-4 space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-200/80 dark:border-white/10">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <i class="fa-solid fa-coins text-amber-500"></i>
+          Spot Asset Allocation
+        </h3>
+        <span class="text-xs font-mono font-bold text-brand-600 dark:text-brand-400">
+          Total: \${{ totalValue() | number:'1.2-2' }}
+        </span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs font-mono">
+          <thead>
+            <tr class="text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-white/10 uppercase tracking-wider text-[11px]">
+              <th class="py-2">Asset</th>
+              <th class="py-2">Balance</th>
+              <th class="py-2">Avg Buy</th>
+              <th class="py-2">Mark Price</th>
+              <th class="py-2">Total Value</th>
+              <th class="py-2">Allocation</th>
+              <th class="py-2 text-right">Unrealized PnL</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200/60 dark:divide-white/5">
+            @for (h of holdings(); track h.symbol) {
+              <tr class="hover:bg-slate-100/70 dark:hover:bg-white/5 transition-colors">
+                <td class="py-3 font-bold text-slate-900 dark:text-white font-sans flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+                  {{ h.name }} ({{ h.symbol }})
+                </td>
+                <td class="py-3 text-slate-800 dark:text-slate-200 font-medium">{{ h.quantity | number:'1.2-4' }}</td>
+                <td class="py-3 text-slate-700 dark:text-slate-300 font-medium">\${{ h.averageBuyPrice | number:'1.2-2' }}</td>
+                <td class="py-3 font-semibold text-slate-900 dark:text-white">\${{ h.currentPrice | number:'1.2-2' }}</td>
+                <td class="py-3 font-bold text-slate-900 dark:text-white">\${{ h.totalValueUsd | number:'1.2-2' }}</td>
+                <td class="py-3">
+                  <div class="flex items-center gap-2">
+                    <div class="w-16 bg-slate-200 dark:bg-white/10 h-1.5 rounded-full overflow-hidden">
+                      <div class="bg-brand-500 h-1.5 rounded-full" [style.width.%]="h.allocationPercent"></div>
+                    </div>
+                    <span class="text-[11px] text-slate-600 dark:text-slate-400 font-semibold">{{ h.allocationPercent | number:'1.1-1' }}%</span>
+                  </div>
+                </td>
+                <td class="py-3 text-right font-bold" [ngClass]="h.unrealizedPnl >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'">
+                  {{ h.unrealizedPnl | pnlFormat }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Price Alerts Management -->
+    <div class="lg:col-span-4 glass-card p-4 space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-200/80 dark:border-white/10">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <i class="fa-solid fa-bell text-brand-500"></i>
+          Active Price Alerts
+        </h3>
+        <span class="text-xs text-slate-600 dark:text-slate-400 font-semibold">({{ alerts().length }})</span>
+      </div>
+
+      <div class="space-y-2.5">
+        @for (alert of alerts(); track alert.id) {
+          <div class="p-3 rounded-xl bg-slate-100/90 dark:bg-white/5 border border-slate-200/80 dark:border-white/5 text-xs font-mono flex items-center justify-between gap-2">
+            <div>
+              <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <span>{{ alert.symbol }}</span>
+                <app-glass-badge variant="info">
+                  Target \${{ alert.targetValue | number:'1.2-2' }}
+                </app-glass-badge>
+              </div>
+              <div class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 font-sans">{{ alert.message || 'Price Target Trigger' }}</div>
+            </div>
+
+            <button
+              type="button"
+              (click)="deleteAlert(alert.id)"
+              class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
+              title="Delete Alert"
+            >
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+        } @empty {
+          <div class="py-8 text-center text-xs text-slate-500 dark:text-slate-400 font-sans">
+            No active price alerts configured.
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Alert Modal -->
+<app-glass-modal
+  [isOpen]="showAlertModal()"
+  title="Create Price Alert"
+  subtitle="Receive real-time push and in-app notifications when price hits your target."
+  icon="fa-solid fa-bell"
+  (closed)="showAlertModal.set(false)"
+>
+  <div class="space-y-3 text-xs">
+    <div>
+      <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Asset Symbol</label>
+      <input type="text" [(ngModel)]="newAlertSymbol" class="glass-input w-full px-3 py-2 rounded-xl text-slate-900 dark:text-white font-mono uppercase" placeholder="e.g. BTCUSDT" />
+    </div>
+
+    <div>
+      <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Target Price (USD)</label>
+      <input type="number" step="any" [(ngModel)]="newAlertTarget" class="glass-input w-full px-3 py-2 rounded-xl text-slate-900 dark:text-white font-mono" placeholder="70000" />
+    </div>
+
+    <div>
+      <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Notification Message</label>
+      <input type="text" [(ngModel)]="newAlertMsg" class="glass-input w-full px-3 py-2 rounded-xl text-slate-900 dark:text-white" placeholder="BTC breakout alert" />
+    </div>
+  </div>
+
+  <div modal-actions class="flex gap-2">
+    <app-glass-button variant="ghost" (clicked)="showAlertModal.set(false)">Cancel</app-glass-button>
+    <app-glass-button variant="primary" (clicked)="saveAlert()">Create Alert</app-glass-button>
+  </div>
+</app-glass-modal>

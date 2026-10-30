@@ -1,0 +1,481 @@
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="glass-card glass-specular p-5 flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-brand-500/20 text-brand-700 dark:text-brand-400 border border-brand-500/30">
+          Audit & Ledger
+        </span>
+        <span class="text-xs text-slate-600 dark:text-slate-400">· Comprehensive Central Europe (CET) Execution Log</span>
+      </div>
+      <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight mt-1">Trading History & Analytics</h1>
+      <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+        Archival ledger of closed positions, realized returns, visual equity curves, and step-by-step receipt calculations.
+      </p>
+    </div>
+  </div>
+
+  <!-- Visual Analytics & Charts Section (Line, Donut, Bars, KPIs) -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+    <!-- Cumulative PnL Line Chart (6 cols) -->
+    <div class="lg:col-span-6 glass-card p-4 flex flex-col justify-between">
+      <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-200/80 dark:border-white/10">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-chart-line text-brand-500"></i>
+          <h4 class="font-bold text-xs text-slate-900 dark:text-white">Cumulative Realized Equity Curve</h4>
+        </div>
+        <span class="text-[10px] font-mono font-bold text-slate-500">
+          Total: <b [ngClass]="totalRealizedPnl() >= 0 ? 'text-emerald-500' : 'text-rose-500'">{{ totalRealizedPnl() | pnlFormat }}</b>
+        </span>
+      </div>
+
+      <!-- SVG Line Chart with Area Fill -->
+      <div class="h-36 w-full relative">
+        <svg viewBox="0 0 500 120" preserveAspectRatio="none" class="w-full h-full overflow-visible">
+          <defs>
+            <linearGradient id="equityFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#10b981" stop-opacity="0.35" />
+              <stop offset="100%" stop-color="#10b981" stop-opacity="0.0" />
+            </linearGradient>
+          </defs>
+          <!-- Zero Reference Line -->
+          <line x1="0" y1="60" x2="500" y2="60" stroke="rgba(148, 163, 184, 0.2)" stroke-dasharray="3 3" />
+          <!-- Area Gradient -->
+          <polygon [attr.points]="cumulativeSvgPath().area" fill="url(#equityFill)" />
+          <!-- Main Curve -->
+          <polyline
+            [attr.points]="cumulativeSvgPath().line"
+            fill="none"
+            stroke="#10b981"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+
+      <div class="flex justify-between items-center text-[10px] text-slate-500 font-mono pt-2">
+        <span>Inception</span>
+        <span>Trades Executed: {{ totalTradesCount() }}</span>
+        <span>Latest Close</span>
+      </div>
+    </div>
+
+    <!-- Win / Loss Ratio Donut Chart (3 cols) -->
+    <div class="lg:col-span-3 glass-card p-4 flex flex-col items-center justify-between text-center">
+      <div class="w-full flex items-center justify-between pb-2 mb-2 border-b border-slate-200/80 dark:border-white/10">
+        <h4 class="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
+          <i class="fa-solid fa-chart-pie text-emerald-500"></i>
+          <span>Win / Loss Ratio</span>
+        </h4>
+        <span class="text-[10px] font-mono font-black text-brand-500">{{ winRate() | number:'1.1-1' }}%</span>
+      </div>
+
+      <!-- SVG Donut -->
+      <div class="relative w-28 h-28 my-auto flex items-center justify-center">
+        <svg viewBox="0 0 90 90" class="w-full h-full -rotate-90">
+          <!-- Background track (Loss/Total) -->
+          <circle
+            cx="45" cy="45" r="36"
+            fill="none"
+            stroke="rgba(244, 63, 94, 0.3)"
+            stroke-width="9"
+          />
+          <!-- Winning slice -->
+          <circle
+            cx="45" cy="45" r="36"
+            fill="none"
+            stroke="#10b981"
+            stroke-width="9"
+            stroke-linecap="round"
+            [attr.stroke-dasharray]="donutCircumference"
+            [attr.stroke-dashoffset]="donutWinOffset()"
+            class="transition-all duration-700"
+          />
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center">
+          <span class="text-sm font-black text-slate-900 dark:text-white font-mono">{{ winRate() | number:'1.0-0' }}%</span>
+          <span class="text-[9px] text-slate-500 uppercase font-bold">Win Rate</span>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="grid grid-cols-2 gap-2 w-full pt-2 text-[10px] font-mono border-t border-slate-200/60 dark:border-white/5">
+        <div class="text-emerald-600 dark:text-emerald-400 font-bold">
+          Wins: <b>{{ totalWins() }}</b>
+        </div>
+        <div class="text-rose-600 dark:text-rose-400 font-bold">
+          Losses: <b>{{ totalLosses() }}</b>
+        </div>
+      </div>
+    </div>
+
+    <!-- Asset Class Performance Bars (3 cols) -->
+    <div class="lg:col-span-3 glass-card p-4 flex flex-col justify-between">
+      <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-200/80 dark:border-white/10">
+        <h4 class="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
+          <i class="fa-solid fa-bars-progress text-indigo-500"></i>
+          <span>Asset Class PnL</span>
+        </h4>
+        <span class="text-[10px] text-slate-500 font-mono">5 Sectors</span>
+      </div>
+
+      <div class="space-y-2 py-1">
+        @for (item of assetClassBreakdown(); track item.assetClass) {
+          <div class="space-y-0.5 text-[11px]">
+            <div class="flex justify-between items-center font-mono">
+              <span class="font-bold text-slate-700 dark:text-slate-300">{{ item.name }}</span>
+              <span class="font-black" [ngClass]="item.pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'">
+                {{ item.pnl | pnlFormat }}
+              </span>
+            </div>
+            <div class="w-full h-1.5 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden">
+              <div
+                class="h-full rounded-full transition-all duration-500"
+                [ngClass]="item.pnl >= 0 ? 'bg-emerald-500' : 'bg-rose-500'"
+                [style.width.%]="item.barPercent || 5"
+              ></div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="flex justify-between text-[10px] font-mono text-slate-500 pt-1 border-t border-slate-200/60 dark:border-white/5">
+        <span>Factor: <b class="text-slate-900 dark:text-white">{{ profitFactor() | number:'1.2-2' }}</b></span>
+        <span>Best: <b class="text-emerald-500">+{{ bestTrade() | pnlFormat }}</b></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Controls Bar -->
+  <div class="glass-card p-4 flex flex-wrap items-center gap-3">
+    <!-- Search -->
+    <div class="relative flex-1 min-w-[200px]">
+      <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-xs text-slate-400"></i>
+      <input
+        type="text"
+        [(ngModel)]="searchFilter"
+        placeholder="Search by symbol or asset..."
+        class="glass-input w-full pl-8 pr-3 py-2 rounded-xl text-xs text-slate-900 dark:text-white font-medium"
+      />
+    </div>
+
+    <!-- Outcome Filter -->
+    <select
+      [(ngModel)]="outcomeFilter"
+      class="glass-input px-3 py-2 rounded-xl text-xs bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-white/10 font-bold"
+    >
+      <option value="">All Outcomes</option>
+      <option value="WIN">WIN (Profitable)</option>
+      <option value="LOSS">LOSS</option>
+      <option value="BREAK-EVEN">BREAK-EVEN</option>
+    </select>
+
+    <!-- Side Filter -->
+    <select
+      [(ngModel)]="sideFilter"
+      class="glass-input px-3 py-2 rounded-xl text-xs bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-white/10 font-bold"
+    >
+      <option [ngValue]="null">All Sides</option>
+      <option [ngValue]="TradingOrderSide.Buy">Buy / Long</option>
+      <option [ngValue]="TradingOrderSide.Sell">Sell / Short</option>
+    </select>
+
+    <!-- Asset Class Filter -->
+    <select
+      [(ngModel)]="assetClassFilter"
+      class="glass-input px-3 py-2 rounded-xl text-xs bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-white/10 font-bold"
+    >
+      <option [ngValue]="null">All Asset Classes</option>
+      <option [ngValue]="AssetClass.Crypto">Crypto</option>
+      <option [ngValue]="AssetClass.Forex">Forex</option>
+      <option [ngValue]="AssetClass.Stock">Stocks</option>
+      <option [ngValue]="AssetClass.Future">Commodities</option>
+      <option [ngValue]="AssetClass.Index">Indices</option>
+    </select>
+  </div>
+
+  <!-- Ledger Table (Duration removed; Start/End CET and Close Price added) -->
+  <div class="glass-card overflow-hidden p-4">
+    <div class="overflow-x-auto -mx-4 px-4">
+      <table class="w-full text-left text-xs font-mono">
+        <thead>
+          <tr class="text-slate-600 dark:text-slate-400 border-b border-slate-200/80 dark:border-white/10 uppercase tracking-wider text-[11px] font-bold">
+            <th class="py-2.5 font-bold">Instrument</th>
+            <th class="py-2.5 font-bold">Side / Lev</th>
+            <th class="py-2.5 font-bold">Units</th>
+            <th class="py-2.5 font-bold">Entry Price</th>
+            <th class="py-2.5 font-bold">Close Trigger Price</th>
+            <th class="py-2.5 font-bold">Start Time (CET)</th>
+            <th class="py-2.5 font-bold">End Time (CET)</th>
+            <th class="py-2.5 font-bold">Outcome</th>
+            <th class="py-2.5 font-bold text-right">Realized PnL</th>
+            <th class="py-2.5 font-bold text-right">Receipt</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200/60 dark:divide-white/5">
+          @for (trade of filteredTrades(); track trade.id) {
+            <tr class="hover:bg-slate-200/50 dark:hover:bg-white/5 transition-colors">
+              <!-- Instrument -->
+              <td class="py-3 font-bold text-slate-900 dark:text-white font-sans">
+                <div>{{ trade.symbol }}</div>
+                <div class="text-[10px] text-slate-500 dark:text-slate-400">{{ trade.assetName }}</div>
+              </td>
+
+              <!-- Side & Leverage -->
+              <td class="py-3">
+                <div class="flex items-center gap-1.5">
+                  <app-glass-badge [variant]="trade.side === TradingOrderSide.Buy ? 'bullish' : 'bearish'">
+                    {{ trade.side === TradingOrderSide.Buy ? 'BUY' : 'SELL' }}
+                  </app-glass-badge>
+                  <span class="text-slate-700 dark:text-slate-300 font-bold">{{ trade.leverage }}x</span>
+                </div>
+              </td>
+
+              <!-- Quantity Units -->
+              <td class="py-3 text-slate-800 dark:text-slate-200">
+                {{ trade.quantity | number:'1.2-4' }}
+              </td>
+
+              <!-- Entry Price -->
+              <td class="py-3 text-slate-600 dark:text-slate-300">
+                \${{ trade.entryPrice | number:'1.2-4' }}
+              </td>
+
+              <!-- Close Trigger Price -->
+              <td class="py-3 text-slate-900 dark:text-white font-bold">
+                \${{ trade.closePrice || trade.currentPrice | number:'1.2-4' }}
+              </td>
+
+              <!-- Start Time in Central Europe Time (CET) -->
+              <td class="py-3 text-slate-600 dark:text-slate-400 text-[11px]">
+                {{ trade.openedAtUtc | cetDate:'datetime' }}
+              </td>
+
+              <!-- End Time in Central Europe Time (CET) -->
+              <td class="py-3 text-slate-600 dark:text-slate-400 text-[11px]">
+                {{ (trade.closedAtUtc || trade.openedAtUtc) | cetDate:'datetime' }}
+              </td>
+
+              <!-- Outcome -->
+              <td class="py-3">
+                <span
+                  class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider"
+                  [ngClass]="trade.realizedPnl >= 0 ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border border-rose-500/30'"
+                >
+                  {{ trade.outcomeBadge }}
+                </span>
+              </td>
+
+              <!-- Realized PnL -->
+              <td
+                class="py-3 font-bold text-right"
+                [ngClass]="trade.realizedPnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'"
+              >
+                {{ trade.realizedPnl | pnlFormat }}
+              </td>
+
+              <!-- Receipt Trigger -->
+              <td class="py-3 text-right">
+                <button
+                  type="button"
+                  (click)="selectedTrade.set(trade); showReceiptModal.set(true)"
+                  class="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/60 text-xs font-bold transition-all shadow-2xs inline-flex items-center gap-1 cursor-pointer"
+                >
+                  <i class="fa-solid fa-receipt text-indigo-500"></i>
+                  <span>Receipt</span>
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="10" class="py-8 text-center text-slate-600 dark:text-slate-400 font-sans">
+                No closed trades found matching criteria.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Trade Receipt & Profit/Loss Calculation Explanation Modal (Formula + Real Numbers Calculation) -->
+  <app-glass-modal
+    [isOpen]="showReceiptModal()"
+    title="Trade Execution Receipt & PnL Breakdown"
+    (closed)="showReceiptModal.set(false)"
+  >
+    @if (selectedTrade()) {
+      <div class="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
+        <!-- Top Outcome Banner -->
+        <div
+          class="p-4 rounded-2xl flex items-center justify-between border"
+          [ngClass]="selectedTrade()!.realizedPnl >= 0
+            ? 'bg-emerald-500/10 border-emerald-500/30'
+            : 'bg-rose-500/10 border-rose-500/30'"
+        >
+          <div>
+            <div class="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">Net Realized Outcome</div>
+            <div class="text-2xl font-black" [ngClass]="selectedTrade()!.realizedPnl >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'">
+              {{ selectedTrade()!.realizedPnl | pnlFormat }}
+            </div>
+          </div>
+          <div class="text-right">
+            <span
+              class="px-2.5 py-1 rounded-lg text-xs font-black uppercase text-white shadow-xs"
+              [ngClass]="selectedTrade()!.realizedPnl >= 0 ? 'bg-emerald-600' : 'bg-rose-600'"
+            >
+              {{ selectedTrade()!.outcomeBadge }}
+            </span>
+            <div class="text-xs font-bold text-slate-600 dark:text-slate-300 mt-1">
+              {{ selectedTrade()!.roiPercentage >= 0 ? '+' : '' }}{{ selectedTrade()!.roiPercentage | number:'1.2-2' }}% ROI
+            </div>
+          </div>
+        </div>
+
+        <!-- Profit/Loss Mathematical Formula AND Replaced Numbers Calculation (Requested by User) -->
+        <div class="p-4 rounded-2xl bg-brand-500/10 border border-brand-500/25 space-y-3 font-sans">
+          <div class="flex items-center gap-1.5 text-brand-700 dark:text-brand-400 text-xs font-black uppercase tracking-wider">
+            <i class="fa-solid fa-calculator"></i>
+            <span>PnL Calculation Breakdown & Formula</span>
+          </div>
+
+          <!-- 1. The Abstract Formula -->
+          <div class="space-y-1">
+            <span class="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider">
+              1. Mathematical Formula:
+            </span>
+            <div class="font-mono text-xs font-bold text-slate-800 dark:text-slate-200 bg-white/70 dark:bg-black/30 p-2.5 rounded-xl border border-brand-500/15">
+              @if (selectedTrade()!.side === TradingOrderSide.Buy) {
+                PnL = (Exit Price - Entry Price) × Executed Units × Leverage Multiplier
+              } @else {
+                PnL = (Entry Price - Exit Price) × Executed Units × Leverage Multiplier
+              }
+            </div>
+          </div>
+
+          <!-- 2. Numbers Replaced Step-by-Step Calculation -->
+          <div class="space-y-1">
+            <span class="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider">
+              2. Arithmetic Calculation (Numbers Replaced):
+            </span>
+            <div class="font-mono text-xs font-bold bg-white/70 dark:bg-black/30 p-2.5 rounded-xl border border-brand-500/15 space-y-1 leading-relaxed">
+              @if (selectedTrade()!.side === TradingOrderSide.Buy) {
+                <div class="text-slate-700 dark:text-slate-300">
+                  = (\${{ selectedTrade()!.closePrice || selectedTrade()!.currentPrice | number:'1.2-4' }} - \${{ selectedTrade()!.entryPrice | number:'1.2-4' }}) × {{ selectedTrade()!.quantity }} Units × {{ selectedTrade()!.leverage }}x
+                </div>
+                <div class="text-slate-600 dark:text-slate-400 text-[11px]">
+                  = ({{ getPriceDelta(selectedTrade()!) >= 0 ? '+' : '' }}\${{ getPriceDelta(selectedTrade()!) | number:'1.2-4' }} price delta) × {{ selectedTrade()!.quantity }} Units × {{ selectedTrade()!.leverage }}x
+                </div>
+                <div class="text-sm font-black pt-1 border-t border-slate-200/60 dark:border-white/10" [ngClass]="selectedTrade()!.realizedPnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'">
+                  = {{ selectedTrade()!.realizedPnl | pnlFormat }} Net Realized Return
+                </div>
+              } @else {
+                <div class="text-slate-700 dark:text-slate-300">
+                  = (\${{ selectedTrade()!.entryPrice | number:'1.2-4' }} - \${{ selectedTrade()!.closePrice || selectedTrade()!.currentPrice | number:'1.2-4' }}) × {{ selectedTrade()!.quantity }} Units × {{ selectedTrade()!.leverage }}x
+                </div>
+                <div class="text-slate-600 dark:text-slate-400 text-[11px]">
+                  = ({{ getPriceDelta(selectedTrade()!) >= 0 ? '+' : '' }}\${{ getPriceDelta(selectedTrade()!) | number:'1.2-4' }} short delta) × {{ selectedTrade()!.quantity }} Units × {{ selectedTrade()!.leverage }}x
+                </div>
+                <div class="text-sm font-black pt-1 border-t border-slate-200/60 dark:border-white/10" [ngClass]="selectedTrade()!.realizedPnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'">
+                  = {{ selectedTrade()!.realizedPnl | pnlFormat }} Net Realized Return
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- 3. Return on Capital (ROI) Breakdown -->
+          <div class="space-y-1">
+            <span class="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider">
+              3. Return on Initial Margin (ROI %):
+            </span>
+            <div class="font-mono text-xs font-bold text-slate-800 dark:text-slate-200 bg-white/70 dark:bg-black/30 p-2.5 rounded-xl border border-brand-500/15">
+              ROI = ({{ selectedTrade()!.realizedPnl | pnlFormat }} / \${{ selectedTrade()!.initialMargin | number:'1.2-2' }} Margin) × 100% = 
+              <b [ngClass]="selectedTrade()!.realizedPnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'">
+                {{ selectedTrade()!.roiPercentage >= 0 ? '+' : '' }}{{ selectedTrade()!.roiPercentage | number:'1.2-2' }}%
+              </b>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero Card: Price That Caused Trade to Close & Close Time -->
+        <div class="p-3.5 rounded-2xl bg-slate-100/90 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <div class="space-y-0.5">
+            <div class="text-[10px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-flag-checkered"></i>
+              <span>Price That Caused Trade to Close</span>
+            </div>
+            <div class="text-lg font-black text-slate-900 dark:text-white font-mono">
+              \${{ selectedTrade()!.closePrice || selectedTrade()!.currentPrice | number:'1.2-4' }}
+            </div>
+            <div class="text-[10px] font-bold text-slate-500">
+              Reason: <b class="text-slate-800 dark:text-slate-200">{{ selectedTrade()!.closeReasonBadge }}</b>
+            </div>
+          </div>
+          <div class="space-y-0.5 border-t sm:border-t-0 sm:border-l border-slate-200 dark:border-white/10 pt-2 sm:pt-0 sm:pl-3">
+            <div class="text-[10px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-clock"></i>
+              <span>Closed When (CET)</span>
+            </div>
+            <div class="text-xs font-bold text-slate-900 dark:text-white font-mono">
+              {{ (selectedTrade()!.closedAtUtc || selectedTrade()!.openedAtUtc) | cetDate:'full' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Full Audit Matrix -->
+        <div class="grid grid-cols-2 gap-2 text-xs font-medium font-mono">
+          <div class="p-2.5 rounded-xl bg-slate-100/70 dark:bg-white/5 border border-slate-200/60 dark:border-white/5">
+            <div class="text-[10px] font-bold uppercase text-slate-500 font-sans">Side & Leverage</div>
+            <div class="font-bold text-slate-900 dark:text-white mt-0.5">
+              {{ selectedTrade()!.side === TradingOrderSide.Buy ? 'BUY / LONG' : 'SELL / SHORT' }} ({{ selectedTrade()!.leverage }}x)
+            </div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-100/70 dark:bg-white/5 border border-slate-200/60 dark:border-white/5">
+            <div class="text-[10px] font-bold uppercase text-slate-500 font-sans">Executed Units</div>
+            <div class="font-bold text-slate-900 dark:text-white mt-0.5">{{ selectedTrade()!.quantity | number:'1.2-4' }}</div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-100/70 dark:bg-white/5 border border-slate-200/60 dark:border-white/5">
+            <div class="text-[10px] font-bold uppercase text-slate-500 font-sans">Entry Price</div>
+            <div class="font-bold text-slate-900 dark:text-white mt-0.5">\${{ selectedTrade()!.entryPrice | number:'1.2-4' }}</div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-100/70 dark:bg-white/5 border border-slate-200/60 dark:border-white/5">
+            <div class="text-[10px] font-bold uppercase text-slate-500 font-sans">Price Move per Unit</div>
+            <div class="font-bold mt-0.5" [ngClass]="getPriceDelta(selectedTrade()!) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'">
+              {{ getPriceDelta(selectedTrade()!) >= 0 ? '+' : '' }}\${{ getPriceDelta(selectedTrade()!) | number:'1.2-4' }}
+            </div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-100/70 dark:bg-white/5 border border-slate-200/60 dark:border-white/5">
+            <div class="text-[10px] font-bold uppercase text-slate-500 font-sans">Allocated Margin</div>
+            <div class="font-bold text-slate-900 dark:text-white mt-0.5">\${{ selectedTrade()!.initialMargin | number:'1.2-2' }}</div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-100/70 dark:bg-white/5 border border-slate-200/60 dark:border-white/5">
+            <div class="text-[10px] font-bold uppercase text-slate-500 font-sans">Position Notional</div>
+            <div class="font-bold text-slate-900 dark:text-white mt-0.5">\${{ selectedTrade()!.notionalValue | number:'1.2-2' }}</div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-100/70 dark:bg-white/5 border border-slate-200/60 dark:border-white/5">
+            <div class="text-[10px] font-bold uppercase text-slate-500 font-sans">Opened (CET)</div>
+            <div class="font-bold text-slate-900 dark:text-white mt-0.5 text-[11px]">{{ selectedTrade()!.openedAtUtc | cetDate:'short' }}</div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-100/70 dark:bg-white/5 border border-slate-200/60 dark:border-white/5">
+            <div class="text-[10px] font-bold uppercase text-slate-500 font-sans">Closed (CET)</div>
+            <div class="font-bold text-slate-900 dark:text-white mt-0.5 text-[11px]">{{ (selectedTrade()!.closedAtUtc || selectedTrade()!.openedAtUtc) | cetDate:'short' }}</div>
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-end">
+          <app-glass-button (clicked)="showReceiptModal.set(false)" variant="primary">
+            Close Receipt
+          </app-glass-button>
+        </div>
+      </div>
+    }
+  </app-glass-modal>
+</div>

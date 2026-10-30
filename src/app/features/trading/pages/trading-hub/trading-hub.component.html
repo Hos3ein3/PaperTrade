@@ -1,0 +1,117 @@
+<div class="space-y-6">
+  <!-- Hub Header Bar -->
+  <div class="glass-card glass-specular p-5 flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-brand-500/20 text-brand-700 dark:text-brand-400 border border-brand-500/30">
+          Paper Trading Engine
+        </span>
+        <span class="text-xs text-slate-600 dark:text-slate-400">· Real-time Market Feeds</span>
+      </div>
+      <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">Universal Trading Hub</h1>
+      <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+        Trade simulated Cryptocurrencies, Forex pairs, Stocks, and Indices with live quotes and zero financial risk.
+      </p>
+    </div>
+
+    <!-- Action Shortcuts -->
+    <div class="flex items-center gap-2.5">
+      <app-glass-button
+        variant="secondary"
+        icon="fa-solid fa-rotate-left"
+        size="sm"
+        (clicked)="showResetDialog.set(true)"
+      >
+        Reset Balance
+      </app-glass-button>
+
+      <a
+        routerLink="/trading/trade"
+        [queryParams]="{ symbol: state.selectedSymbol() }"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-brand-600 hover:bg-brand-500 text-white shadow-glow-brand transition-all duration-200"
+      >
+        <i class="fa-solid fa-chart-line"></i>
+        Open Terminal
+      </a>
+    </div>
+  </div>
+
+  <!-- Key Account Metric Tiles -->
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+    <app-stat-metric
+      label="Cash Balance"
+      [value]="(state.account()?.cashBalance || 0) | pnlFormat:'$':false"
+      icon="fa-solid fa-wallet"
+      variant="brand"
+    />
+
+    <app-stat-metric
+      label="Account Equity"
+      [value]="(state.account()?.equity || 0) | pnlFormat:'$':false"
+      icon="fa-solid fa-chart-pie"
+      [trend]="state.totalUnrealizedPnl() >= 0 ? 'up' : 'down'"
+      [badgeText]="(state.totalUnrealizedPnl() >= 0 ? '+' : '') + (state.totalUnrealizedPnl() | pnlFormat:'$')"
+      variant="brand"
+    />
+
+    <app-stat-metric
+      label="Unrealized PnL"
+      [value]="state.totalUnrealizedPnl() | pnlFormat:'$'"
+      icon="fa-solid fa-arrow-trend-up"
+      [variant]="state.totalUnrealizedPnl() >= 0 ? 'bullish' : 'bearish'"
+      [trend]="state.totalUnrealizedPnl() >= 0 ? 'up' : 'down'"
+    />
+
+    <app-stat-metric
+      label="Realized PnL"
+      [value]="(state.account()?.realizedPnl || 0) | pnlFormat:'$'"
+      icon="fa-solid fa-sack-dollar"
+      [variant]="(state.account()?.realizedPnl || 0) >= 0 ? 'bullish' : 'bearish'"
+    />
+
+    <app-stat-metric
+      label="Margin Used"
+      [value]="(state.account()?.marginUsed || 0) | pnlFormat:'$':false"
+      icon="fa-solid fa-lock"
+      variant="warning"
+    />
+
+    <app-stat-metric
+      label="Free Margin"
+      [value]="(state.account()?.freeMargin || 0) | pnlFormat:'$':false"
+      icon="fa-solid fa-unlock"
+      variant="brand"
+    />
+  </div>
+
+  <!-- Main Two-Column Workstation Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Left: Watchlist & Multi-Asset Screener -->
+    <div class="lg:col-span-4 h-[640px]">
+      <app-watchlist-panel />
+    </div>
+
+    <!-- Right: Active Positions & Working Orders -->
+    <div class="lg:col-span-8 flex flex-col gap-6">
+      <div class="min-h-[340px]">
+        <app-positions-table (modifyClicked)="openModifyModal($event)" />
+      </div>
+
+      <div class="min-h-[260px]">
+        <app-orders-table />
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modals -->
+<app-balance-reset-dialog
+  [isOpen]="showResetDialog()"
+  (closed)="showResetDialog.set(false)"
+/>
+
+<app-modify-position-dialog
+  [isOpen]="showModifyDialog()"
+  [position]="selectedPosition()"
+  (closed)="showModifyDialog.set(false)"
+/>

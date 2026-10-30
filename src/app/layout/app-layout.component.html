@@ -1,0 +1,36 @@
+<div class="min-h-screen flex flex-col">
+  <!-- Sticky Top Navigation -->
+  <app-navbar
+    class="sticky top-0 z-40 block w-full backdrop-blur-xl"
+    (menuToggled)="sidebarOpen.update(v => !v)"
+    (notificationsClicked)="notificationsOpen.set(true)"
+  />
+
+  <div class="flex-1 flex w-full relative">
+    <!-- Sidebar Navigation -->
+    <app-sidebar
+      [mobileOpen]="sidebarOpen()"
+      (closed)="sidebarOpen.set(false)"
+    />
+
+    <!-- Main Content Area -->
+    <main class="flex-1 p-4 lg:p-6 pb-24 lg:pb-8 w-full max-w-[1600px] mx-auto overflow-x-hidden">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <!-- Mobile Bottom Floating Bar -->
+  <app-mobile-nav />
+
+  <!-- Notification Slide-over Drawer -->
+  <app-notification-drawer
+    [isOpen]="notificationsOpen()"
+    (closed)="notificationsOpen.set(false)"
+  />
+
+  <!-- Toast Container -->
+  <app-toast-container />
+
+  <!-- Global Loading Screen with Cancel Button -->
+  <app-loading-overlay />
+</div>

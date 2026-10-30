@@ -1,0 +1,162 @@
+<div class="min-h-screen flex flex-col justify-between p-4 sm:p-6 lg:p-10 relative overflow-hidden bg-slate-950 text-slate-100 selection:bg-brand-500 selection:text-white">
+  <!-- Glowing ambient backdrop orb -->
+  <div class="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-brand-500/10 blur-3xl pointer-events-none"></div>
+  <div class="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-rose-500/10 blur-3xl pointer-events-none"></div>
+
+  <!-- Top Navigation Strip -->
+  <header class="flex items-center justify-between w-full max-w-5xl mx-auto z-10">
+    <a routerLink="/trading" class="flex items-center gap-2.5 group cursor-pointer">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-cyan-400 text-white flex items-center justify-center shadow-glow-brand transition-transform group-hover:scale-105">
+        <i class="fa-solid fa-chart-line text-sm"></i>
+      </div>
+      <div>
+        <span class="font-black text-sm tracking-tight text-white block">TrackerPro</span>
+        <span class="text-[10px] text-slate-400 block -mt-1 font-mono">Universal Terminal</span>
+      </div>
+    </a>
+
+    <div class="flex items-center gap-3">
+      <!-- Dark/Light Theme Switcher -->
+      <button
+        type="button"
+        (click)="theme.toggleDarkMode()"
+        class="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 transition-all cursor-pointer shadow-xs"
+        title="Toggle Dark/Light Mode"
+      >
+        <i [class]="theme.isDark() ? 'fa-solid fa-sun text-amber-400' : 'fa-solid fa-moon text-slate-300'" class="text-sm"></i>
+      </button>
+
+      <a
+        routerLink="/trading"
+        class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 transition-all cursor-pointer flex items-center gap-2"
+      >
+        <i class="fa-solid fa-house text-xs"></i>
+        <span>Hub</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Error Card Centerpiece -->
+  <main class="w-full max-w-2xl mx-auto my-auto z-10 py-8">
+    <div class="glass-card glass-specular p-8 sm:p-12 rounded-3xl shadow-2xl border border-white/10 text-center relative overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+      <!-- Giant Subtle Status Code Background -->
+      <div class="absolute inset-0 flex items-center justify-center select-none pointer-events-none opacity-5 dark:opacity-10 font-black text-8xl sm:text-9xl font-mono text-white">
+        {{ error().code > 0 ? error().code : 'ERR' }}
+      </div>
+
+      <!-- Icon & Status Badge -->
+      <div class="relative z-10 flex flex-col items-center">
+        <div class="w-20 h-20 rounded-3xl flex items-center justify-center mb-6 shadow-glow border" [class]="error().badgeClass">
+          <i [class]="error().icon" class="text-3xl" [class]="error().colorClass"></i>
+        </div>
+
+        <div class="flex items-center gap-2 mb-3">
+          <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider font-mono border" [class]="error().badgeClass">
+            HTTP {{ error().code > 0 ? error().code : 'GATEWAY ERROR' }}
+          </span>
+          @if (error().correlationId) {
+            <span class="text-xs font-mono text-slate-400 bg-white/5 px-2.5 py-1 rounded-full border border-white/5">
+              Ref: {{ error().correlationId }}
+            </span>
+          }
+        </div>
+
+        <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white mb-3">
+          {{ error().title }}
+        </h1>
+
+        <p class="text-sm text-slate-300 max-w-md mx-auto leading-relaxed mb-2 font-medium">
+          {{ error().message }}
+        </p>
+
+        @if (error().description) {
+          <p class="text-xs text-slate-400 max-w-md mx-auto leading-relaxed mb-6">
+            {{ error().description }}
+          </p>
+        }
+
+        <!-- Technical Diagnostics Accordion (Respects environment.features.showErrorTraces) -->
+        @if (error().technicalDetails && showErrorTraces) {
+          <div class="w-full text-left my-4 pt-4 border-t border-white/10">
+            <button
+              type="button"
+              (click)="showTechnicalDetails.set(!showTechnicalDetails())"
+              class="text-xs font-bold text-slate-400 hover:text-white flex items-center gap-2 cursor-pointer mb-2"
+            >
+              <i class="fa-solid" [class.fa-chevron-right]="!showTechnicalDetails()" [class.fa-chevron-down]="showTechnicalDetails()"></i>
+              <span>{{ showTechnicalDetails() ? 'Hide Technical Diagnostics' : 'Inspect Diagnostic Stack Trace' }}</span>
+            </button>
+
+            @if (showTechnicalDetails()) {
+              <div class="p-4 rounded-2xl bg-black/60 border border-white/10 font-mono text-xs text-rose-300 max-h-48 overflow-auto select-all">
+                <pre class="whitespace-pre-wrap break-all">{{ formatDetails(error().technicalDetails) }}</pre>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Actions Toolbar -->
+        <div class="flex flex-wrap items-center justify-center gap-3 mt-4">
+          @if (error().primaryAction) {
+            <app-glass-button
+              variant="primary"
+              size="lg"
+              [icon]="error().primaryAction?.icon || 'fa-solid fa-arrow-right'"
+              (clicked)="executePrimary()"
+            >
+              {{ error().primaryAction?.label }}
+            </app-glass-button>
+          }
+
+          @if (error().secondaryAction?.link) {
+            <a
+              [routerLink]="error().secondaryAction?.link"
+              class="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-200 bg-white/5 hover:bg-white/10 border border-white/10 transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+            >
+              @if (error().secondaryAction?.icon) {
+                <i [class]="error().secondaryAction?.icon"></i>
+              }
+              {{ error().secondaryAction?.label }}
+            </a>
+          }
+
+          <button
+            type="button"
+            (click)="goBack()"
+            class="px-4 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+          >
+            <i class="fa-solid fa-arrow-left text-xs"></i>
+            Go Back
+          </button>
+
+          @if (error().technicalDetails) {
+            <button
+              type="button"
+              (click)="copyDiagnostics()"
+              class="px-3.5 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 bg-white/5 hover:bg-white/10 border border-white/5 transition-all cursor-pointer flex items-center gap-1.5"
+              title="Copy incident diagnostics"
+            >
+              <i class="fa-solid fa-copy text-xs"></i>
+              Copy Trace
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer Strip -->
+  <footer class="w-full max-w-5xl mx-auto z-10 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 py-2 border-t border-white/5 gap-2">
+    <div class="flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+      <span>System Telemetry & Gateway Monitor</span>
+    </div>
+    <div class="flex items-center gap-4 font-mono text-[11px]">
+      <a routerLink="/trading" class="hover:text-slate-300 transition-colors">Paper Trading</a>
+      <span>•</span>
+      <a routerLink="/profile" class="hover:text-slate-300 transition-colors">Preferences</a>
+      <span>•</span>
+      <a routerLink="/admin/audit-log" class="hover:text-slate-300 transition-colors">Audit Ledger</a>
+    </div>
+  </footer>
+</div>

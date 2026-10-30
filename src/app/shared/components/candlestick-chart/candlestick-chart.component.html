@@ -1,0 +1,200 @@
+<div class="glass-card flex flex-col h-full w-full overflow-hidden p-3 relative select-none">
+  <!-- Chart Controls Toolbar -->
+  <div class="flex flex-wrap items-center justify-between gap-2 pb-2 mb-2 border-b border-slate-200/80 dark:border-white/10 text-xs">
+    <!-- Left: Symbol, Status & OHLC Telemetry -->
+    <div class="flex items-center gap-3">
+      <span class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-1.5 font-sans">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        {{ symbol() }}
+      </span>
+
+      <!-- Engine Switcher (TradingView / Canvas) -->
+      <div class="flex items-center bg-slate-100 dark:bg-white/5 p-0.5 rounded-lg border border-slate-200/80 dark:border-white/10 text-[11px] font-bold">
+        <button
+          type="button"
+          (click)="chartEngine.set('tradingview')"
+          class="px-2.5 py-0.5 rounded-md transition-all flex items-center gap-1 cursor-pointer"
+          [ngClass]="chartEngine() === 'tradingview'
+            ? 'bg-brand-600 text-white shadow-xs'
+            : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'"
+        >
+          <i class="fa-solid fa-chart-line"></i>
+          <span>TradingView</span>
+        </button>
+        <button
+          type="button"
+          (click)="chartEngine.set('canvas')"
+          class="px-2.5 py-0.5 rounded-md transition-all flex items-center gap-1 cursor-pointer"
+          [ngClass]="chartEngine() === 'canvas'
+            ? 'bg-brand-600 text-white shadow-xs'
+            : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'"
+        >
+          <i class="fa-solid fa-palette"></i>
+          <span>Canvas</span>
+        </button>
+      </div>
+
+      <!-- OHLC Quick Readout -->
+      <span class="hidden sm:inline-flex text-[11px] text-slate-600 dark:text-slate-400 font-mono gap-2">
+        <span>O: <b [ngClass]="currentCandleColor()">{{ hoveredCandle()?.open || lastCandle()?.open | number:'1.2-2' }}</b></span>
+        <span>H: <b class="text-emerald-600 dark:text-emerald-400 font-semibold">{{ hoveredCandle()?.high || lastCandle()?.high | number:'1.2-2' }}</b></span>
+        <span>L: <b class="text-rose-600 dark:text-rose-400 font-semibold">{{ hoveredCandle()?.low || lastCandle()?.low | number:'1.2-2' }}</b></span>
+        <span>C: <b [ngClass]="currentCandleColor()">{{ hoveredCandle()?.close || lastCandle()?.close | number:'1.2-2' }}</b></span>
+      </span>
+    </div>
+
+    <!-- Right: Timeframe Selector -->
+    <div class="flex items-center gap-1 bg-slate-100/90 dark:bg-white/5 p-0.5 rounded-lg border border-slate-200/80 dark:border-white/10">
+      @for (tf of timeframes; track tf) {
+        <button
+          type="button"
+          (click)="selectTimeframe(tf)"
+          class="px-2 py-0.5 rounded text-[11px] font-bold transition-colors cursor-pointer"
+          [ngClass]="activeTf() === tf ? 'bg-brand-600 text-white shadow-xs' : 'text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'"
+        >
+          {{ tf }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Primary TradingView Chart Container -->
+  <div
+    class="relative flex-1 w-full min-h-[380px] lg:min-h-[480px] rounded-xl overflow-hidden"
+    [ngClass]="chartEngine() === 'tradingview' ? 'block' : 'hidden'"
+  >
+    <div id="tradingview_chart_container" class="w-full h-full min-h-[380px] lg:min-h-[480px]"></div>
+  </div>
+
+  <!-- Fallback Canvas Chart Container -->
+  @if (chartEngine() === 'canvas') {
+    <div
+      class="relative flex-1 w-full min-h-[380px] overflow-hidden cursor-crosshair"
+      (mousemove)="onMouseMove($event)"
+      (mouseleave)="onMouseLeave()"
+    >
+      <svg
+        class="w-full h-full"
+        preserveAspectRatio="none"
+        viewBox="0 0 1000 500"
+      >
+        <!-- Horizontal Price Grid Lines -->
+        @for (level of priceGridLevels(); track level.price) {
+          <line
+            x1="0"
+            [attr.y1]="level.y"
+            x2="940"
+            [attr.y2]="level.y"
+            stroke="rgba(148, 163, 184, 0.2)"
+            stroke-dasharray="3 3"
+          />
+          <text
+            x="945"
+            [attr.y]="level.y + 4"
+            fill="rgba(100, 116, 139, 0.85)"
+            font-size="10"
+            font-family="monospace"
+          >
+            {{ level.price | number:'1.2-2' }}
+          </text>
+        }
+
+        <!-- Volume Bars -->
+        @for (candle of renderedCandles(); track candle.time) {
+          <rect
+            [attr.x]="candle.x - candle.width / 2"
+            [attr.y]="candle.volY"
+            [attr.width]="candle.width"
+            [attr.height]="candle.volHeight"
+            [attr.fill]="candle.isBullish ? 'rgba(16, 185, 129, 0.25)' : 'rgba(244, 63, 94, 0.25)'"
+          />
+        }
+
+        <!-- Candlesticks (Wicks and Bodies) -->
+        @for (candle of renderedCandles(); track candle.time) {
+          <!-- High-Low Wick -->
+          <line
+            [attr.x1]="candle.x"
+            [attr.y1]="candle.wickHighY"
+            [attr.x2]="candle.x"
+            [attr.y2]="candle.wickLowY"
+            [attr.stroke]="candle.isBullish ? '#10b981' : '#f43f5e'"
+            stroke-width="1.5"
+          />
+
+          <!-- Body -->
+          <rect
+            [attr.x]="candle.x - candle.width / 2"
+            [attr.y]="candle.bodyY"
+            [attr.width]="candle.width"
+            [attr.height]="candle.bodyHeight"
+            [attr.fill]="candle.isBullish ? '#10b981' : '#f43f5e'"
+            rx="1"
+          />
+        }
+
+        <!-- Current Live Price Line -->
+        @if (currentPriceY() !== null) {
+          <line
+            x1="0"
+            [attr.y1]="currentPriceY()"
+            x2="940"
+            [attr.y2]="currentPriceY()"
+            [attr.stroke]="lastCandle()?.close! >= lastCandle()?.open! ? '#10b981' : '#f43f5e'"
+            stroke-width="1"
+            stroke-dasharray="4 2"
+          />
+          <!-- Price Marker Tag -->
+          <rect
+            x="942"
+            [attr.y]="currentPriceY()! - 10"
+            width="58"
+            height="20"
+            [attr.fill]="lastCandle()?.close! >= lastCandle()?.open! ? '#10b981' : '#f43f5e'"
+            rx="4"
+          />
+          <text
+            x="946"
+            [attr.y]="currentPriceY()! + 4"
+            fill="#ffffff"
+            font-size="10"
+            font-weight="bold"
+            font-family="monospace"
+          >
+            {{ lastCandle()?.close | number:'1.2-2' }}
+          </text>
+        }
+
+        <!-- Crosshair (When Hovered) -->
+        @if (hoverX() !== null && hoverY() !== null) {
+          <line
+            [attr.x1]="hoverX()"
+            y1="0"
+            [attr.x2]="hoverX()"
+            y2="500"
+            stroke="rgba(148, 163, 184, 0.5)"
+            stroke-dasharray="2 2"
+          />
+          <line
+            x1="0"
+            [attr.y1]="hoverY()"
+            x2="940"
+            [attr.y2]="hoverY()"
+            stroke="rgba(148, 163, 184, 0.5)"
+            stroke-dasharray="2 2"
+          />
+        }
+      </svg>
+
+      <!-- Hover Tooltip Pill -->
+      @if (hoveredCandle()) {
+        <div
+          class="absolute top-2 left-2 pointer-events-none bg-white/95 dark:bg-slate-900/90 text-slate-800 dark:text-slate-200 text-[11px] p-2 rounded-lg border border-slate-200/90 dark:border-white/20 backdrop-blur-md shadow-lg flex gap-3 z-10 font-mono"
+        >
+          <span>Time: <b>{{ hoveredCandle()?.time }}</b></span>
+          <span>Vol: <b>{{ hoveredCandle()?.volume | number:'1.0-0' }}</b></span>
+        </div>
+      }
+    </div>
+  }
+</div>

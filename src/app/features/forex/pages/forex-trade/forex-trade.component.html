@@ -1,0 +1,154 @@
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="glass-card glass-specular p-5 flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-brand-500/20 text-brand-700 dark:text-brand-400 border border-brand-500/30">
+          Execution Desk
+        </span>
+        <span class="text-xs text-slate-600 dark:text-slate-400">· 1:50 Leverage · Interbank Liquidity</span>
+      </div>
+      <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">Forex Trade Terminal</h1>
+      <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+        Lot sizing risk calculations, live pip telemetry, and emergency circuit breakers.
+      </p>
+    </div>
+
+    <app-glass-button
+      variant="bearish"
+      icon="fa-solid fa-power-off"
+      size="sm"
+      (clicked)="activateKillSwitch()"
+    >
+      Emergency Kill Switch
+    </app-glass-button>
+  </div>
+
+  <!-- Main Layout: Active Positions (8 cols) & Quick Ticket / Lot Calculator (4 cols) -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Open Trades Table -->
+    <div class="lg:col-span-8 glass-card p-4 space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-200/80 dark:border-white/10">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <i class="fa-solid fa-crosshairs text-brand-500"></i>
+          Open Forex Positions ({{ dashboard()?.openTrades?.length || 0 }})
+        </h3>
+        <span class="text-xs text-slate-600 dark:text-slate-400 font-mono">
+          Balance: \${{ dashboard()?.account?.balance | number:'1.2-2' }}
+        </span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs font-mono">
+          <thead>
+            <tr class="text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-white/10 uppercase tracking-wider text-[11px]">
+              <th class="py-2">Pair</th>
+              <th class="py-2">Direction</th>
+              <th class="py-2">Lots</th>
+              <th class="py-2">Open Price</th>
+              <th class="py-2">Mark Price</th>
+              <th class="py-2">Pips</th>
+              <th class="py-2 text-right">PnL (USD)</th>
+              <th class="py-2 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200/60 dark:divide-white/5">
+            @for (trade of dashboard()?.openTrades; track trade.id) {
+              <tr class="hover:bg-slate-100/70 dark:hover:bg-white/5 transition-colors">
+                <td class="py-3 font-bold text-slate-900 dark:text-white font-sans">{{ trade.symbol }}</td>
+                <td class="py-3">
+                  <app-glass-badge [variant]="trade.direction === ForexTradeDirection.Buy ? 'bullish' : 'bearish'">
+                    {{ trade.direction === ForexTradeDirection.Buy ? 'BUY' : 'SELL' }}
+                  </app-glass-badge>
+                </td>
+                <td class="py-3 text-slate-800 dark:text-slate-200 font-medium">{{ trade.lotSize | number:'1.2-2' }}</td>
+                <td class="py-3 text-slate-700 dark:text-slate-300 font-medium">{{ trade.openPrice | number:'1.4-4' }}</td>
+                <td class="py-3 font-semibold text-slate-900 dark:text-white">{{ trade.currentPrice | number:'1.4-4' }}</td>
+                <td class="py-3 font-bold" [ngClass]="trade.unrealizedPips >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'">
+                  {{ trade.unrealizedPips >= 0 ? '+' : '' }}{{ trade.unrealizedPips | number:'1.1-1' }}
+                </td>
+                <td class="py-3 text-right font-bold" [ngClass]="trade.unrealizedPnl >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'">
+                  {{ trade.unrealizedPnl | pnlFormat }}
+                </td>
+                <td class="py-3 text-right">
+                  <button
+                    type="button"
+                    (click)="closeTrade(trade.id)"
+                    class="px-2.5 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-700 dark:text-rose-300 border border-rose-500/30 text-xs font-semibold transition-colors"
+                  >
+                    Close
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="8" class="py-8 text-center text-slate-500 dark:text-slate-400 font-sans">
+                  No active Forex positions.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Forex Order Ticket & Lot Size Calculator -->
+    <div class="lg:col-span-4 glass-card p-4 space-y-4">
+      <div class="pb-2 border-b border-slate-200/80 dark:border-white/10">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <i class="fa-solid fa-calculator text-brand-500"></i>
+          Lot Size Calculator
+        </h3>
+        <p class="text-xs text-slate-600 dark:text-slate-400">Position sizing aligned with risk rules</p>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Currency Pair</label>
+          <select [(ngModel)]="calcSymbol" class="glass-input w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-300 dark:border-white/10">
+            <option value="EUR/USD">EUR/USD</option>
+            <option value="GBP/USD">GBP/USD</option>
+            <option value="USD/JPY">USD/JPY</option>
+            <option value="XAU/USD">Gold (XAU/USD)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Account Balance ($)</label>
+          <input type="number" [(ngModel)]="calcBalance" class="glass-input w-full px-3 py-2 rounded-xl text-slate-900 dark:text-white font-mono" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Risk (%)</label>
+            <input type="number" step="0.5" [(ngModel)]="calcRiskPercent" class="glass-input w-full px-3 py-2 rounded-xl text-slate-900 dark:text-white font-mono" />
+          </div>
+          <div>
+            <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1">SL (Pips)</label>
+            <input type="number" [(ngModel)]="calcStopLossPips" class="glass-input w-full px-3 py-2 rounded-xl text-slate-900 dark:text-white font-mono" />
+          </div>
+        </div>
+
+        <div class="p-3 rounded-xl bg-slate-100/90 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 font-mono space-y-1">
+          <div class="flex justify-between text-slate-600 dark:text-slate-400">
+            <span>Calculated Lot Size:</span>
+            <span class="text-brand-600 dark:text-brand-400 font-bold text-base">{{ computedLots() }} Lots</span>
+          </div>
+          <div class="flex justify-between text-slate-600 dark:text-slate-400">
+            <span>Capital at Risk:</span>
+            <span class="text-rose-600 dark:text-rose-400 font-semibold">\${{ (calcBalance * calcRiskPercent) / 100 | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 pt-2">
+          <app-glass-button variant="bullish" (clicked)="quickOrder(ForexTradeDirection.Buy)">
+            Buy {{ computedLots() }}
+          </app-glass-button>
+          <app-glass-button variant="bearish" (clicked)="quickOrder(ForexTradeDirection.Sell)">
+            Sell {{ computedLots() }}
+          </app-glass-button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

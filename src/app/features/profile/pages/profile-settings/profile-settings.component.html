@@ -1,0 +1,285 @@
+<div class="space-y-6 max-w-4xl mx-auto">
+  <!-- Header -->
+  <div class="glass-card glass-specular p-5 flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-brand-500/20 text-brand-700 dark:text-brand-400 border border-brand-500/30">
+          Account Control
+        </span>
+        <span class="text-xs text-slate-600 dark:text-slate-400">· Security, Telemetry & Time Provider</span>
+      </div>
+      <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">Profile & Trader Preferences</h1>
+      <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+        Manage your personal credentials, workspace theme, time zone, default currencies, and workstation telemetry.
+      </p>
+    </div>
+
+    <app-glass-button variant="secondary" icon="fa-solid fa-arrow-right-from-bracket" (clicked)="logout()">
+      Sign Out
+    </app-glass-button>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="flex items-center gap-2 border-b border-slate-200/80 dark:border-white/10 pb-2">
+    <button
+      type="button"
+      (click)="activeTab.set('profile')"
+      class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
+      [ngClass]="activeTab() === 'profile' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white'"
+    >
+      <i class="fa-solid fa-user"></i>
+      Personal Profile
+    </button>
+
+    <button
+      type="button"
+      (click)="activeTab.set('preferences')"
+      class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
+      [ngClass]="activeTab() === 'preferences' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white'"
+    >
+      <i class="fa-solid fa-sliders"></i>
+      Workstation Preferences
+    </button>
+
+    <button
+      type="button"
+      (click)="activeTab.set('security')"
+      class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
+      [ngClass]="activeTab() === 'security' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white'"
+    >
+      <i class="fa-solid fa-lock"></i>
+      Security & Password
+    </button>
+  </div>
+
+  <!-- Tab 1: Profile Information -->
+  @if (activeTab() === 'profile') {
+    <div class="glass-card p-6 space-y-6">
+      <div class="flex items-center gap-4 pb-4 border-b border-slate-200/80 dark:border-white/10">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-600 to-cyan-400 text-white flex items-center justify-center font-bold text-xl shadow-glow-brand">
+          {{ profile.firstName?.[0] || 'T' }}{{ profile.lastName?.[0] || 'P' }}
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white">{{ profile.firstName }} {{ profile.lastName }}</h3>
+          <p class="text-xs text-slate-600 dark:text-slate-400 font-mono">{{ profile.email }}</p>
+
+          <!-- Timezone & Current Time Badge -->
+          <div class="flex flex-wrap items-center gap-2 mt-2">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-brand-500/10 text-brand-700 dark:text-brand-300 border border-brand-500/20">
+              <i class="fa-solid fa-earth-americas text-[9px]"></i>
+              {{ getSelectedTzDefinition().displayName }} ({{ getSelectedTzDefinition().offsetLabel }})
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-200/80 dark:bg-white/10 text-slate-700 dark:text-slate-300 font-mono">
+              <i class="fa-solid fa-clock text-[9px] text-brand-500"></i>
+              {{ getTimeZonePreview() }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+        <div>
+          <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1">First Name</label>
+          <input type="text" [(ngModel)]="profile.firstName" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-slate-900 dark:text-white" />
+        </div>
+
+        <div>
+          <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Last Name</label>
+          <input type="text" [(ngModel)]="profile.lastName" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-slate-900 dark:text-white" />
+        </div>
+
+        <div>
+          <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Email Address</label>
+          <input type="email" [(ngModel)]="profile.email" disabled class="glass-input w-full px-3.5 py-2.5 rounded-xl text-slate-500 opacity-70 cursor-not-allowed" />
+        </div>
+
+        <div>
+          <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Phone Number</label>
+          <input type="tel" [(ngModel)]="profile.phoneNumber" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-slate-900 dark:text-white" />
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-3 border-t border-slate-200/80 dark:border-white/10">
+        <app-glass-button variant="primary" icon="fa-solid fa-check" (clicked)="saveProfile()">
+          Save Profile Changes
+        </app-glass-button>
+      </div>
+    </div>
+  }
+
+  <!-- Tab 2: Workstation Preferences -->
+  @if (activeTab() === 'preferences') {
+    <div class="glass-card p-6 space-y-6">
+      <!-- Section: Time Zone Preference (Domain PreferredTimeZone & TimeProvider) -->
+      <div class="pb-5 border-b border-slate-200/80 dark:border-white/10 space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="flex items-center gap-2">
+              <h4 class="text-sm font-bold text-slate-900 dark:text-white">Regional Time Zone (Domain Preference)</h4>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">
+                TimeProvider
+              </span>
+            </div>
+            <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+              Configures timestamps, live candle clocks, and execution receipts according to your preferred time zone.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+          <div>
+            <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1 text-xs">
+              Preferred Time Zone
+            </label>
+            <select
+              [ngModel]="preferences.timeZone"
+              (ngModelChange)="onTimeZoneChange($event)"
+              class="glass-input w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-300 dark:border-white/10 text-xs font-medium cursor-pointer"
+            >
+              @for (tz of availableTimeZones; track tz.enumValue) {
+                <option [value]="tz.enumValue">
+                  {{ tz.displayName }} ({{ tz.offsetLabel }})
+                </option>
+              }
+            </select>
+            <span class="text-[11px] text-slate-500 block mt-1 font-mono">
+              IANA ID: {{ getSelectedTzDefinition().iana }}
+            </span>
+          </div>
+
+          <!-- Live Clock Preview Card -->
+          <div class="p-3.5 rounded-xl bg-slate-100/90 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                <span>Live Time Preview</span>
+                <span class="text-emerald-500 flex items-center gap-1 font-mono">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Active
+                </span>
+              </div>
+              <p class="text-sm font-mono font-bold text-slate-900 dark:text-white">
+                {{ getTimeZonePreview() }}
+              </p>
+            </div>
+            <div class="flex items-center justify-between text-[10px] text-slate-500 pt-2 border-t border-slate-200 dark:border-white/5 mt-2">
+              <span>Standard: {{ getSelectedTzDefinition().offsetLabel }}</span>
+              <span class="text-slate-600 dark:text-slate-400">LocalStorage & Cookie Synced</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dark / Light Theme Mode -->
+      <div class="pb-4 border-b border-slate-200/80 dark:border-white/10 flex items-center justify-between">
+        <div>
+          <h4 class="text-sm font-bold text-slate-900 dark:text-white">Interface Theme Mode</h4>
+          <p class="text-xs text-slate-600 dark:text-slate-400">Switch between liquid obsidian dark mode and crystalline light mode.</p>
+        </div>
+
+        <button
+          type="button"
+          (click)="toggleTheme()"
+          class="px-4 py-2 rounded-xl border border-slate-300 dark:border-white/20 bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-white/10 dark:hover:bg-white/20 dark:text-white text-xs font-bold flex items-center gap-2 transition-all shadow-sm cursor-pointer"
+        >
+          <i [class]="theme.isDark() ? 'fa-solid fa-moon text-brand-600 dark:text-brand-400' : 'fa-solid fa-sun text-amber-500'"></i>
+          {{ theme.isDark() ? 'Dark Mode (Active)' : 'Light Mode (Active)' }}
+        </button>
+      </div>
+
+      <!-- Color Accent Scheme -->
+      <div class="pb-4 border-b border-slate-200/80 dark:border-white/10 space-y-3">
+        <div>
+          <h4 class="text-sm font-bold text-slate-900 dark:text-white">Accent Glow Palette</h4>
+          <p class="text-xs text-slate-600 dark:text-slate-400">Choose the primary visual accent used for terminal telemetry and buttons.</p>
+        </div>
+
+        <div class="grid grid-cols-5 gap-3">
+          @for (acc of accents; track acc.id) {
+            <button
+              type="button"
+              (click)="selectAccent(acc.id)"
+              class="p-3 rounded-xl border text-xs font-bold flex flex-col items-center gap-1.5 transition-all cursor-pointer"
+              [ngClass]="theme.accent() === acc.id
+                ? 'border-brand-500 bg-brand-500/20 text-brand-700 dark:text-white shadow-sm'
+                : 'border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:text-white'"
+            >
+              <span class="w-4 h-4 rounded-full" [ngClass]="acc.colorClass"></span>
+              {{ acc.label }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Currency & Default Dashboard -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+        <div>
+          <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Base Currency Format</label>
+          <select [(ngModel)]="preferences.currency" class="glass-input w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-300 dark:border-white/10">
+            <option value="USD">USD ($)</option>
+            <option value="EUR">EUR (€)</option>
+            <option value="GBP">GBP (£)</option>
+            <option value="USDT">USDT</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Default Start Workstation</label>
+          <select [(ngModel)]="preferences.preferredDashboard" class="glass-input w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-300 dark:border-white/10">
+            <option value="trading">Universal Paper Trading Hub</option>
+            <option value="terminal">Trade & Chart Terminal</option>
+            <option value="forex">Forex Market Intelligence</option>
+            <option value="crypto">Cryptocurrency Markets</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-slate-200/80 dark:border-white/10">
+        <span class="text-[11px] text-slate-500 flex items-center gap-1.5">
+          <i class="fa-solid fa-floppy-disk text-brand-500"></i>
+          Persisted to LocalStorage, Cookie, and Backend Database
+        </span>
+
+        <app-glass-button variant="primary" icon="fa-solid fa-check" (clicked)="savePreferences()">
+          Save All Preferences
+        </app-glass-button>
+      </div>
+    </div>
+  }
+
+  <!-- Tab 3: Security & Password -->
+  @if (activeTab() === 'security') {
+    <div class="glass-card p-6 space-y-4">
+      <div class="pb-2 border-b border-slate-200/80 dark:border-white/10">
+        <h4 class="text-sm font-bold text-slate-900 dark:text-white">Change Account Password</h4>
+        <p class="text-xs text-slate-600 dark:text-slate-400">Ensure your account remains guarded with an updated passphrase.</p>
+      </div>
+
+      <div class="space-y-3 text-xs max-w-md">
+        <div>
+          <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Current Password</label>
+          <input type="password" [(ngModel)]="currentPassword" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-slate-900 dark:text-white" />
+        </div>
+
+        <div>
+          <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1">New Password</label>
+          <input type="password" [(ngModel)]="newPassword" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-slate-900 dark:text-white" />
+        </div>
+
+        <div>
+          <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Confirm New Password</label>
+          <input type="password" [(ngModel)]="confirmNewPassword" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-slate-900 dark:text-white" />
+        </div>
+
+        <div class="pt-2">
+          <app-glass-button
+            variant="primary"
+            [disabled]="!currentPassword || !newPassword || newPassword !== confirmNewPassword"
+            (clicked)="changePassword()"
+          >
+            Update Password
+          </app-glass-button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

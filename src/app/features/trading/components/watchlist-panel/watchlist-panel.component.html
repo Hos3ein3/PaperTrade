@@ -1,0 +1,155 @@
+<div class="glass-card flex flex-col h-full overflow-hidden p-3 select-none relative">
+  <!-- Search & Category Filters -->
+  <div class="space-y-2 pb-2 mb-2 border-b border-slate-200/80 dark:border-white/10">
+    <div class="relative">
+      <i class="fa-solid absolute left-3 top-2.5 text-xs text-slate-400"
+         [ngClass]="isSearching() ? 'fa-spinner fa-spin text-brand-500' : 'fa-magnifying-glass'"></i>
+      <input
+        type="text"
+        [ngModel]="searchQuery"
+        (ngModelChange)="onSearchChange($event)"
+        placeholder="Search Binance, MEXC, BrentOil, Forex..."
+        class="glass-input w-full pl-8 pr-8 py-1.5 rounded-lg text-xs placeholder-slate-400 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-brand-500/20"
+      />
+      @if (isSearching()) {
+        <span class="absolute right-2.5 top-2 text-[10px] text-brand-500 font-bold flex items-center gap-1 font-mono">
+          <i class="fa-solid fa-circle-notch fa-spin"></i>
+        </span>
+      }
+    </div>
+
+    <!-- Asset Class Filter Pills -->
+    <div class="flex items-center gap-1 overflow-x-auto pb-1 text-[11px] scroll-glass">
+      <button
+        type="button"
+        (click)="selectedCategory.set(null)"
+        class="px-2 py-0.5 rounded-md font-medium whitespace-nowrap transition-colors"
+        [ngClass]="selectedCategory() === null ? 'bg-brand-600 text-white font-bold shadow-xs' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:text-white dark:hover:bg-white/10'"
+      >
+        All
+      </button>
+      <button
+        type="button"
+        (click)="selectedCategory.set(AssetClass.Crypto)"
+        class="px-2 py-0.5 rounded-md font-medium whitespace-nowrap transition-colors"
+        [ngClass]="selectedCategory() === AssetClass.Crypto ? 'bg-brand-600 text-white font-bold shadow-xs' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:text-white dark:hover:bg-white/10'"
+      >
+        Crypto
+      </button>
+      <button
+        type="button"
+        (click)="selectedCategory.set(AssetClass.Forex)"
+        class="px-2 py-0.5 rounded-md font-medium whitespace-nowrap transition-colors"
+        [ngClass]="selectedCategory() === AssetClass.Forex ? 'bg-brand-600 text-white font-bold shadow-xs' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:text-white dark:hover:bg-white/10'"
+      >
+        Forex
+      </button>
+      <button
+        type="button"
+        (click)="selectedCategory.set(AssetClass.Stock)"
+        class="px-2 py-0.5 rounded-md font-medium whitespace-nowrap transition-colors"
+        [ngClass]="selectedCategory() === AssetClass.Stock ? 'bg-brand-600 text-white font-bold shadow-xs' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:text-white dark:hover:bg-white/10'"
+      >
+        Stocks
+      </button>
+      <button
+        type="button"
+        (click)="selectedCategory.set(AssetClass.Future)"
+        class="px-2 py-0.5 rounded-md font-medium whitespace-nowrap transition-colors"
+        [ngClass]="selectedCategory() === AssetClass.Future ? 'bg-brand-600 text-white font-bold shadow-xs' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:text-white dark:hover:bg-white/10'"
+      >
+        Commodities
+      </button>
+      <button
+        type="button"
+        (click)="selectedCategory.set(AssetClass.Index)"
+        class="px-2 py-0.5 rounded-md font-medium whitespace-nowrap transition-colors"
+        [ngClass]="selectedCategory() === AssetClass.Index ? 'bg-brand-600 text-white font-bold shadow-xs' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:text-white dark:hover:bg-white/10'"
+      >
+        Indices
+      </button>
+    </div>
+  </div>
+
+  <!-- In-Panel Local Loading Bar during Search -->
+  @if (isSearching()) {
+    <div class="px-3 py-1.5 mb-2 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-700 dark:text-brand-300 text-[11px] font-bold flex items-center justify-between animate-pulse">
+      <span class="flex items-center gap-1.5">
+        <i class="fa-solid fa-spinner fa-spin text-xs"></i>
+        <span>Searching markets & feeds...</span>
+      </span>
+      <span class="font-mono text-[10px] text-brand-500 font-bold uppercase">Watchlist Query</span>
+    </div>
+  }
+
+  <!-- Quotes List -->
+  <div class="flex-1 overflow-y-auto space-y-1 pr-1">
+    @for (quote of filteredQuotes(); track quote.symbol) {
+      <div
+        (click)="selectAsset(quote)"
+        class="flex items-center justify-between p-2 rounded-xl cursor-pointer transition-all duration-200 border text-slate-800 dark:text-slate-200"
+        [ngClass]="state.selectedSymbol() === quote.symbol
+          ? 'bg-brand-500/15 border-brand-500/40 text-brand-900 dark:text-brand-300 font-bold shadow-xs'
+          : 'border-transparent hover:border-slate-300/80 dark:hover:border-white/10 hover:bg-slate-200/60 dark:hover:bg-white/5'"
+      >
+        <!-- Symbol & Name & Feed Badges -->
+        <div class="flex items-center gap-2 min-w-0">
+          <button
+            type="button"
+            (click)="$event.stopPropagation(); state.toggleWatchlist(quote.symbol, quote.assetName, quote.assetClass)"
+            class="text-xs transition-colors p-1"
+            [ngClass]="quote.isWatchlisted ? 'text-amber-500 dark:text-amber-400' : 'text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300'"
+            title="Toggle Watchlist"
+          >
+            <i class="fa-solid fa-star"></i>
+          </button>
+          <div class="truncate">
+            <div class="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap">
+              <span>{{ quote.symbol }}</span>
+              <!-- Feed Source Badge (e.g. Binance, Oanda, AlphaVantage) -->
+              <span class="text-[8px] font-extrabold px-1.5 py-0.2 rounded bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/10 uppercase font-mono">
+                {{ getFeedSource(quote) }}
+              </span>
+              <!-- Live API vs Simulate API Badge (Matching MVC) -->
+              @if (isSimulated(quote)) {
+                <span class="text-[8px] px-1.5 py-0.2 rounded font-black tracking-wider bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/25 uppercase font-mono">
+                  Simulate API
+                </span>
+              } @else {
+                <span class="text-[8px] px-1.5 py-0.2 rounded font-black tracking-wider bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25 uppercase font-mono inline-flex items-center gap-1">
+                  <i class="fa-solid fa-satellite-dish text-[7px] text-emerald-500 animate-pulse"></i>
+                  <span>Live API</span>
+                </span>
+              }
+            </div>
+            <div class="text-[10px] text-slate-600 dark:text-slate-400 font-medium truncate mt-0.5">{{ quote.assetName }}</div>
+          </div>
+        </div>
+
+        <!-- Price & 24h Change -->
+        <div class="text-right font-mono flex flex-col items-end shrink-0 pl-2">
+          <span class="text-xs font-bold text-slate-900 dark:text-white">
+            \${{ quote.price | number:'1.2-4' }}
+          </span>
+          <span
+            class="text-[10px] font-bold px-1 rounded mt-0.5"
+            [ngClass]="quote.changePercent24h >= 0 ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/15' : 'text-rose-700 dark:text-rose-400 bg-rose-500/15'"
+          >
+            {{ quote.changePercent24h >= 0 ? '+' : '' }}{{ quote.changePercent24h | number:'1.2-2' }}%
+          </span>
+        </div>
+      </div>
+    } @empty {
+      <div class="py-8 text-center text-xs text-slate-600 dark:text-slate-400">
+        @if (isSearching()) {
+          <div class="flex flex-col items-center gap-2">
+            <i class="fa-solid fa-spinner fa-spin text-brand-500 text-lg"></i>
+            <span>Searching live feeds and Binance/MEXC markets...</span>
+          </div>
+        } @else {
+          <span>No assets match search criteria.</span>
+        }
+      </div>
+    }
+  </div>
+</div>

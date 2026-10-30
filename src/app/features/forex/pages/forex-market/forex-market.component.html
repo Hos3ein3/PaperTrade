@@ -1,0 +1,161 @@
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="glass-card glass-specular p-5 flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-brand-500/20 text-brand-700 dark:text-brand-400 border border-brand-500/30">
+          Foreign Exchange
+        </span>
+        <span class="text-xs text-slate-600 dark:text-slate-400">· Global Currencies & Metals</span>
+      </div>
+      <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">Forex Market Intelligence</h1>
+      <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+        Interbank session overlaps, live spread telemetry, currency strength dynamics, and fundamental releases.
+      </p>
+    </div>
+
+    <a
+      routerLink="/forex/trade"
+      class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-brand-600 hover:bg-brand-500 text-white shadow-glow-brand transition-all"
+    >
+      <i class="fa-solid fa-bolt"></i>
+      Forex Trading Terminal
+    </a>
+  </div>
+
+  <!-- Global Trading Sessions Ribbon -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+    @for (session of overview()?.sessions; track session.city) {
+      <div
+        class="glass-card p-3 relative overflow-hidden flex flex-col justify-between"
+        [ngClass]="session.isOpen ? 'border-emerald-500/40 bg-emerald-500/10' : 'border-slate-200/80 dark:border-white/5 opacity-75'"
+      >
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+            <i class="fa-solid fa-clock text-slate-400"></i>
+            {{ session.city }}
+          </span>
+          <app-glass-badge [variant]="session.isOpen ? 'bullish' : 'neutral'" [dot]="session.isOpen">
+            {{ session.isOpen ? 'OPEN' : 'CLOSED' }}
+          </app-glass-badge>
+        </div>
+        <div class="mt-2 text-xs font-mono text-slate-600 dark:text-slate-400">
+          Hours: {{ session.openUtc }} - {{ session.closeUtc }} UTC
+        </div>
+        @if (session.activeOverlap && session.activeOverlap !== 'None') {
+          <div class="mt-1 text-[10px] font-semibold text-brand-600 dark:text-brand-300">
+            ★ {{ session.activeOverlap }} Overlap Active
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Main Layout: Quotes (7 cols) + Currency Strength & Calendar (5 cols) -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Quotes Table -->
+    <div class="lg:col-span-7 glass-card p-4 space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-200/80 dark:border-white/10">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <i class="fa-solid fa-earth-americas text-brand-500"></i>
+          Major & Commodity Pairs
+        </h3>
+        <span class="text-xs text-slate-600 dark:text-slate-400">Tight Interbank Spreads</span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs font-mono">
+          <thead>
+            <tr class="text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-white/10 uppercase tracking-wider text-[11px]">
+              <th class="py-2">Currency Pair</th>
+              <th class="py-2">Bid</th>
+              <th class="py-2">Ask</th>
+              <th class="py-2">Spread (Pips)</th>
+              <th class="py-2 text-right">24h Change</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200/60 dark:divide-white/5">
+            @for (q of overview()?.quotes; track q.symbol) {
+              <tr class="hover:bg-slate-100/70 dark:hover:bg-white/5 transition-colors">
+                <td class="py-3 font-bold text-slate-900 dark:text-white font-sans">{{ q.symbol }}</td>
+                <td class="py-3 text-slate-700 dark:text-slate-300 font-medium">{{ q.bid | number:'1.4-4' }}</td>
+                <td class="py-3 text-slate-700 dark:text-slate-300 font-medium">{{ q.ask | number:'1.4-4' }}</td>
+                <td class="py-3 text-brand-600 dark:text-brand-400 font-bold">{{ q.spreadPips | number:'1.1-1' }}</td>
+                <td class="py-3 text-right">
+                  <span
+                    class="font-bold px-1.5 py-0.5 rounded"
+                    [ngClass]="q.changePercent >= 0 ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/15' : 'text-rose-700 dark:text-rose-400 bg-rose-500/15'"
+                  >
+                    {{ q.changePercent >= 0 ? '+' : '' }}{{ q.changePercent | number:'1.2-2' }}%
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Currency Strength Matrix & Calendar -->
+    <div class="lg:col-span-5 space-y-6">
+      <!-- Currency Strength Meter -->
+      <div class="glass-card p-4 space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-200/80 dark:border-white/10">
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i class="fa-solid fa-chart-simple text-brand-500"></i>
+            Relative Currency Strength
+          </h3>
+          <span class="text-[11px] text-slate-500 dark:text-slate-400">Score 0 - 10</span>
+        </div>
+
+        <div class="space-y-2">
+          @for (item of strength(); track item.currency) {
+            <div class="flex items-center justify-between gap-3 text-xs">
+              <span class="w-8 font-bold text-slate-900 dark:text-white">{{ item.currency }}</span>
+              <div class="flex-1 bg-slate-200 dark:bg-white/10 h-2 rounded-full overflow-hidden">
+                <div
+                  class="h-2 rounded-full transition-all duration-500"
+                  [style.width.%]="item.score * 10"
+                  [ngClass]="item.bias === 'Strong' ? 'bg-emerald-500' : item.bias === 'Weak' ? 'bg-rose-500' : 'bg-brand-500'"
+                ></div>
+              </div>
+              <span class="w-12 text-right font-mono font-bold" [ngClass]="item.bias === 'Strong' ? 'text-emerald-700 dark:text-emerald-400' : item.bias === 'Weak' ? 'text-rose-700 dark:text-rose-400' : 'text-slate-700 dark:text-slate-300'">
+                {{ item.score | number:'1.1-1' }}
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Economic Calendar -->
+      <div class="glass-card p-4 space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-200/80 dark:border-white/10">
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i class="fa-solid fa-calendar-days text-amber-500"></i>
+            Economic Calendar
+          </h3>
+          <span class="text-[11px] text-amber-600 dark:text-amber-400 font-semibold">High Impact</span>
+        </div>
+
+        <div class="space-y-2.5">
+          @for (ev of calendar(); track ev.eventName) {
+            <div class="p-2.5 rounded-xl bg-slate-100/90 dark:bg-white/5 border border-slate-200/80 dark:border-white/5 text-xs flex items-center justify-between gap-2">
+              <div>
+                <div class="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white">
+                  <span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-200 text-brand-700 dark:bg-white/10 dark:text-brand-300">{{ ev.currency }}</span>
+                  <span>{{ ev.eventName }}</span>
+                </div>
+                <div class="text-[11px] text-slate-600 dark:text-slate-400 mt-1 font-mono">
+                  Time: {{ ev.timeUtc }} UTC · Forecast: {{ ev.forecast }} · Prev: {{ ev.previous }}
+                </div>
+              </div>
+              <app-glass-badge [variant]="ev.impact === 'High' ? 'bearish' : 'warning'">
+                {{ ev.impact }}
+              </app-glass-badge>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

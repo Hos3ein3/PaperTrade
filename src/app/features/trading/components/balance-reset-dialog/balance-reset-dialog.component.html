@@ -1,0 +1,54 @@
+<app-glass-modal
+  [isOpen]="isOpen()"
+  title="Reset Virtual Demo Capital"
+  subtitle="Rebalance your paper trading account to start fresh or test specific portfolio sizes."
+  icon="fa-solid fa-rotate-left"
+  (closed)="closed.emit()"
+>
+  <div class="space-y-4">
+    <!-- Preset Amount Pills -->
+    <label class="block text-xs font-semibold text-slate-800 dark:text-slate-200">Quick Capital Presets</label>
+    <div class="grid grid-cols-4 gap-2">
+      @for (preset of presets; track preset) {
+        <button
+          type="button"
+          (click)="selectedAmount = preset"
+          class="py-2 rounded-xl text-xs font-bold border transition-all"
+          [ngClass]="selectedAmount === preset
+            ? 'bg-brand-500/20 border-brand-500 text-brand-700 dark:text-brand-300 shadow-sm'
+            : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200 dark:bg-white/5 dark:border-white/10 dark:text-slate-400 dark:hover:text-white'"
+        >
+          \${{ preset / 1000 }}K
+        </button>
+      }
+    </div>
+
+    <!-- Custom Input -->
+    <div>
+      <label class="block text-xs font-semibold text-slate-700 dark:text-slate-400 mb-1">Custom Amount (USD)</label>
+      <div class="relative">
+        <span class="absolute left-3 top-2.5 text-slate-500 font-bold">$</span>
+        <input
+          type="number"
+          step="1000"
+          [(ngModel)]="selectedAmount"
+          class="glass-input w-full pl-8 pr-3 py-2 rounded-xl text-sm font-mono text-slate-900 dark:text-white"
+        />
+      </div>
+    </div>
+
+    <div class="p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2">
+      <i class="fa-solid fa-triangle-exclamation mt-0.5 text-amber-600 dark:text-amber-400"></i>
+      <span>Resetting your paper trading account will re-establish cash balance and recalculate equity. Current open positions will remain open.</span>
+    </div>
+  </div>
+
+  <div modal-actions class="flex gap-2">
+    <app-glass-button variant="ghost" (clicked)="closed.emit()">
+      Cancel
+    </app-glass-button>
+    <app-glass-button variant="primary" icon="fa-solid fa-check" (clicked)="confirmReset()">
+      Confirm Reset
+    </app-glass-button>
+  </div>
+</app-glass-modal>

@@ -1,0 +1,9 @@
+<span
+  class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide border backdrop-blur-md transition-all duration-200"
+  [ngClass]="variantClasses()"
+>
+  @if (dot()) {
+    <span class="w-1.5 h-1.5 rounded-full animate-pulse" [ngClass]="dotClasses()"></span>
+  }
+  <ng-content></ng-content>
+</span>

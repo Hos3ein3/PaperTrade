@@ -1,0 +1,197 @@
+<!-- Mobile Backdrop -->
+@if (mobileOpen()) {
+  <div
+    class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-40 lg:hidden"
+    (click)="closed.emit()"
+  ></div>
+}
+
+<!-- Sidebar Container -->
+<aside
+  class="fixed lg:sticky top-0 lg:top-[61px] left-0 h-screen lg:h-[calc(100vh-61px)] w-64 bg-white/85 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 backdrop-blur-2xl border-r border-slate-200/90 dark:border-white/10 p-4 flex flex-col justify-between z-50 transition-transform duration-300 ease-in-out shadow-xl lg:shadow-none"
+  [ngClass]="mobileOpen() ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+>
+  <!-- Navigation Sections -->
+  <div class="space-y-6 overflow-y-auto">
+    <!-- Close Button (Mobile Only) -->
+    <div class="flex items-center justify-between pb-2 border-b border-slate-200/80 dark:border-white/10 lg:hidden">
+      <span class="font-bold text-slate-900 dark:text-white text-sm">Navigation</span>
+      <button (click)="closed.emit()" class="p-1 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+
+    <!-- Section: Universal Paper Trading -->
+    <div>
+      <span class="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 px-3 block mb-2">
+        Paper Trading
+      </span>
+      <nav class="space-y-1">
+        <a
+          routerLink="/trading"
+          routerLinkActive="bg-brand-500/15 text-brand-700 dark:text-brand-300 border-brand-500/30 font-bold shadow-sm"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="closed.emit()"
+          class="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100/90 dark:hover:bg-white/5 border border-transparent transition-all"
+        >
+          <div class="flex items-center gap-2.5">
+            <i class="fa-solid fa-shapes text-sm text-brand-600 dark:text-brand-400"></i>
+            <span>Trading Hub</span>
+          </div>
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-brand-500/20 text-brand-700 dark:text-brand-300 font-mono">Index</span>
+        </a>
+
+        <a
+          routerLink="/trading/trade"
+          routerLinkActive="bg-brand-500/15 text-brand-700 dark:text-brand-300 border-brand-500/30 font-bold shadow-sm"
+          (click)="closed.emit()"
+          class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100/90 dark:hover:bg-white/5 border border-transparent transition-all"
+        >
+          <i class="fa-solid fa-chart-line text-sm text-cyan-600 dark:text-cyan-400"></i>
+          <span>Trade Terminal</span>
+        </a>
+
+        <a
+          routerLink="/trading/analytics"
+          routerLinkActive="bg-brand-500/15 text-brand-700 dark:text-brand-300 border-brand-500/30 font-bold shadow-sm"
+          (click)="closed.emit()"
+          class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100/90 dark:hover:bg-white/5 border border-transparent transition-all"
+        >
+          <i class="fa-solid fa-chart-pie text-sm text-emerald-600 dark:text-emerald-400"></i>
+          <span>Quantitative Analytics</span>
+        </a>
+
+        <a
+          routerLink="/trading/history"
+          routerLinkActive="bg-brand-500/15 text-brand-700 dark:text-brand-300 border-brand-500/30 font-bold shadow-sm"
+          (click)="closed.emit()"
+          class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100/90 dark:hover:bg-white/5 border border-transparent transition-all"
+        >
+          <i class="fa-solid fa-receipt text-sm text-amber-600 dark:text-amber-400"></i>
+          <span>History & Receipts</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Section: Forex Area -->
+    <div>
+      <span class="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 px-3 block mb-2">
+        Forex Markets
+      </span>
+      <nav class="space-y-1">
+        <a
+          routerLink="/forex/market"
+          routerLinkActive="bg-brand-500/15 text-brand-700 dark:text-brand-300 border-brand-500/30 font-bold shadow-sm"
+          (click)="closed.emit()"
+          class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100/90 dark:hover:bg-white/5 border border-transparent transition-all"
+        >
+          <i class="fa-solid fa-earth-americas text-sm text-blue-600 dark:text-blue-400"></i>
+          <span>Sessions & Strength</span>
+        </a>
+
+        <a
+          routerLink="/forex/trade"
+          routerLinkActive="bg-brand-500/15 text-brand-700 dark:text-brand-300 border-brand-500/30 font-bold shadow-sm"
+          (click)="closed.emit()"
+          class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100/90 dark:hover:bg-white/5 border border-transparent transition-all"
+        >
+          <i class="fa-solid fa-sliders text-sm text-teal-600 dark:text-teal-400"></i>
+          <span>Forex Trade Desk</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Section: Crypto Area -->
+    <div>
+      <span class="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 px-3 block mb-2">
+        Crypto Assets
+      </span>
+      <nav class="space-y-1">
+        <a
+          routerLink="/crypto/market"
+          routerLinkActive="bg-brand-500/15 text-brand-700 dark:text-brand-300 border-brand-500/30 font-bold shadow-sm"
+          (click)="closed.emit()"
+          class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100/90 dark:hover:bg-white/5 border border-transparent transition-all"
+        >
+          <i class="fa-brands fa-bitcoin text-sm text-amber-500 dark:text-amber-400"></i>
+          <span>Crypto Markets & Arbitrage</span>
+        </a>
+
+        <a
+          routerLink="/crypto/portfolio"
+          routerLinkActive="bg-brand-500/15 text-brand-700 dark:text-brand-300 border-brand-500/30 font-bold shadow-sm"
+          (click)="closed.emit()"
+          class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100/90 dark:hover:bg-white/5 border border-transparent transition-all"
+        >
+          <i class="fa-solid fa-bell text-sm text-purple-600 dark:text-purple-400"></i>
+          <span>Portfolio & Alerts</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Section: Administration & Telemetry -->
+    <div>
+      <span class="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 px-3 block mb-2">
+        Administration
+      </span>
+      <nav class="space-y-1">
+        <a
+          routerLink="/admin/outbox"
+          routerLinkActive="bg-brand-500/15 text-brand-700 dark:text-brand-300 border-brand-500/30 font-bold shadow-sm"
+          (click)="closed.emit()"
+          class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100/90 dark:hover:bg-white/5 border border-transparent transition-all"
+        >
+          <i class="fa-solid fa-box-archive text-sm text-amber-500"></i>
+          <span>Outbox Messages</span>
+        </a>
+
+        <a
+          routerLink="/admin/audit-log"
+          routerLinkActive="bg-brand-500/15 text-brand-700 dark:text-brand-300 border-brand-500/30 font-bold shadow-sm"
+          (click)="closed.emit()"
+          class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100/90 dark:hover:bg-white/5 border border-transparent transition-all"
+        >
+          <i class="fa-solid fa-list-check text-sm text-cyan-500"></i>
+          <span>Audit Log Trail</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Section: Settings -->
+    <div>
+      <span class="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 px-3 block mb-2">
+        Configuration
+      </span>
+      <nav class="space-y-1">
+        <a
+          routerLink="/profile"
+          routerLinkActive="bg-brand-500/15 text-brand-700 dark:text-brand-300 border-brand-500/30 font-bold shadow-sm"
+          (click)="closed.emit()"
+          class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100/90 dark:hover:bg-white/5 border border-transparent transition-all"
+        >
+          <i class="fa-solid fa-gear text-sm text-slate-500 dark:text-slate-400"></i>
+          <span>Profile & Preferences</span>
+        </a>
+
+        <a
+          routerLink="/ui-components"
+          routerLinkActive="bg-brand-500/15 text-brand-700 dark:text-brand-300 border-brand-500/30 font-bold shadow-sm"
+          (click)="closed.emit()"
+          class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100/90 dark:hover:bg-white/5 border border-transparent transition-all"
+        >
+          <i class="fa-solid fa-shapes text-sm text-brand-500"></i>
+          <span>UI Components</span>
+        </a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Bottom Status Pill -->
+  <div class="pt-4 border-t border-slate-200/80 dark:border-white/10 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400">
+    <span class="flex items-center gap-1.5 font-medium">
+      <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+      Terminal Connected
+    </span>
+    <span class="font-mono text-slate-500 dark:text-slate-400">v2.4 Pro</span>
+  </div>
+</aside>

@@ -1,0 +1,421 @@
+<div class="glass-card flex flex-col h-full p-4 select-none relative overflow-hidden">
+  <!-- Top Specular Gloss Highlight -->
+  <div class="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-brand-400/50 to-transparent"></div>
+
+  <!-- Buy / Sell Equal Width & Height Tabs -->
+  <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100/90 dark:bg-white/5 rounded-xl border border-slate-200/80 dark:border-white/10 mb-3.5">
+    <button
+      type="button"
+      (click)="side.set(TradingOrderSide.Buy); applyRiskReward(2)"
+      class="h-10 w-full rounded-lg font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 border cursor-pointer"
+      [ngClass]="side() === TradingOrderSide.Buy
+        ? 'bg-emerald-600 text-white shadow-glow-bullish border-emerald-400/60'
+        : 'border-transparent text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-white/5'"
+    >
+      <i class="fa-solid fa-arrow-trend-up"></i>
+      <span>Buy / Long</span>
+    </button>
+
+    <button
+      type="button"
+      (click)="side.set(TradingOrderSide.Sell); applyRiskReward(2)"
+      class="h-10 w-full rounded-lg font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 border cursor-pointer"
+      [ngClass]="side() === TradingOrderSide.Sell
+        ? 'bg-rose-600 text-white shadow-glow-bearish border-rose-400/60'
+        : 'border-transparent text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-white/5'"
+    >
+      <i class="fa-solid fa-arrow-trend-down"></i>
+      <span>Sell / Short</span>
+    </button>
+  </div>
+
+  <!-- Order Execution Types: Market, Limit, Stop -->
+  <div class="flex items-center justify-between gap-1 p-1 bg-slate-100/90 dark:bg-white/5 rounded-xl border border-slate-200/80 dark:border-white/10 text-xs mb-3.5">
+    <button
+      type="button"
+      (click)="orderType.set(TradingOrderType.Market); recalculateFromMode()"
+      class="flex-1 py-1.5 rounded-lg font-bold transition-all text-center"
+      [ngClass]="orderType() === TradingOrderType.Market
+        ? 'bg-brand-600 text-white shadow-xs'
+        : 'text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'"
+    >
+      Market
+    </button>
+    <button
+      type="button"
+      (click)="orderType.set(TradingOrderType.Limit); recalculateFromMode()"
+      class="flex-1 py-1.5 rounded-lg font-bold transition-all text-center"
+      [ngClass]="orderType() === TradingOrderType.Limit
+        ? 'bg-brand-600 text-white shadow-xs'
+        : 'text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'"
+    >
+      Limit
+    </button>
+    <button
+      type="button"
+      (click)="orderType.set(TradingOrderType.Stop); recalculateFromMode()"
+      class="flex-1 py-1.5 rounded-lg font-bold transition-all text-center"
+      [ngClass]="orderType() === TradingOrderType.Stop
+        ? 'bg-brand-600 text-white shadow-xs'
+        : 'text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'"
+    >
+      Stop
+    </button>
+  </div>
+
+  <!-- Price Input (Shown for Limit & Stop) -->
+  @if (orderType() !== TradingOrderType.Market) {
+    <div class="mb-3">
+      <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+        Order Price (USD)
+      </label>
+      <div class="relative">
+        <input
+          type="number"
+          step="any"
+          [(ngModel)]="customPrice"
+          (ngModelChange)="recalculateFromMode()"
+          class="glass-input w-full px-3 py-2 rounded-xl text-sm font-mono text-slate-900 dark:text-white placeholder-slate-400 font-bold"
+          placeholder="0.00"
+        />
+        <span class="absolute right-3 top-2.5 text-xs text-slate-500 font-mono font-bold">USD</span>
+      </div>
+    </div>
+  }
+
+  <!-- Position Sizing Section with Multi-Unit Mode Switcher (Matching MVC Trade.cshtml) -->
+  <div class="mb-3.5 space-y-2 p-3 rounded-2xl bg-slate-100/90 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
+    <div class="flex items-center justify-between gap-1 flex-wrap">
+      <span class="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
+        Order Sizing
+      </span>
+
+      <!-- Multi-Unit Sizing Switcher (Units | Margin $ | % Balance | Total $) -->
+      <div class="flex items-center gap-0.5 bg-slate-200/80 dark:bg-white/10 p-0.5 rounded-lg text-[10px] font-bold">
+        <button
+          type="button"
+          (click)="setSizingMode('percent')"
+          class="px-2 py-0.5 rounded-md transition-all"
+          [ngClass]="sizeMode === 'percent' ? 'bg-brand-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'"
+        >
+          % Balance
+        </button>
+        <button
+          type="button"
+          (click)="setSizingMode('units')"
+          class="px-2 py-0.5 rounded-md transition-all"
+          [ngClass]="sizeMode === 'units' ? 'bg-brand-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'"
+        >
+          Units
+        </button>
+        <button
+          type="button"
+          (click)="setSizingMode('margin')"
+          class="px-2 py-0.5 rounded-md transition-all"
+          [ngClass]="sizeMode === 'margin' ? 'bg-brand-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'"
+        >
+          Margin ($)
+        </button>
+        <button
+          type="button"
+          (click)="setSizingMode('total')"
+          class="px-2 py-0.5 rounded-md transition-all"
+          [ngClass]="sizeMode === 'total' ? 'bg-brand-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'"
+        >
+          Total ($)
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Sizing Input -->
+    <div class="relative">
+      @if (sizeMode === 'margin' || sizeMode === 'total') {
+        <span class="absolute left-3 top-2.5 text-xs text-slate-400 font-mono font-bold">$</span>
+      }
+      <input
+        type="number"
+        step="any"
+        [min]="sizeMode === 'percent' ? 1 : 0.0001"
+        [max]="sizeMode === 'percent' ? 100 : null"
+        [(ngModel)]="mainInputValue"
+        (ngModelChange)="onMainInputChange($event)"
+        class="glass-input w-full py-2 rounded-xl text-sm font-mono text-slate-900 dark:text-white placeholder-slate-400 font-bold"
+        [ngClass]="(sizeMode === 'margin' || sizeMode === 'total') ? 'pl-7 pr-12' : 'px-3 pr-16'"
+        placeholder="Size value"
+      />
+      <span class="absolute right-3 top-2.5 text-xs text-brand-600 dark:text-brand-400 font-bold font-mono uppercase">
+        {{ sizeMode === 'percent' ? '%' : (sizeMode === 'units' ? (state.selectedQuote()!.symbol.replace('USDT','') || 'UNIT') : 'USD') }}
+      </span>
+    </div>
+
+    <!-- % Balance Slider & Preset Buttons -->
+    <div class="space-y-1.5 pt-1">
+      <div class="flex justify-between items-center text-[10px] font-bold text-slate-500 dark:text-slate-400">
+        <span>Allocation Slider:</span>
+        <span class="font-mono text-brand-600 dark:text-brand-400 font-black">
+          {{ balancePercentage() | number:'1.1-1' }}% of Margin
+        </span>
+      </div>
+      <input
+        type="range"
+        min="1"
+        max="100"
+        step="1"
+        [value]="balancePercentage()"
+        (input)="setSliderPreset(+$any($event.target).value)"
+        class="w-full accent-brand-500 cursor-pointer h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none"
+      />
+      <!-- Preset Pills -->
+      <div class="grid grid-cols-5 gap-1 pt-0.5">
+        @for (pct of [10, 25, 50, 75, 100]; track pct) {
+          <button
+            type="button"
+            (click)="setSliderPreset(pct)"
+            class="py-0.5 rounded-md text-[10px] font-bold border transition-all text-center cursor-pointer"
+            [ngClass]="Math.round(balancePercentage()) === pct
+              ? 'bg-brand-600 text-white border-brand-500 shadow-2xs'
+              : 'bg-slate-200/60 hover:bg-slate-200 text-slate-700 border-slate-300/80 dark:bg-white/5 dark:hover:bg-white/10 dark:text-slate-300 dark:border-white/10'"
+          >
+            {{ pct === 100 ? 'Max (100%)' : pct + '%' }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- 4 Real-Time Conversion Metrics Strip (Matching MVC) -->
+    <div class="grid grid-cols-2 gap-1.5 pt-1 text-[11px] font-mono border-t border-slate-200/80 dark:border-white/10">
+      <div class="p-1.5 rounded-lg bg-white/60 dark:bg-black/20 border border-slate-200/60 dark:border-white/5">
+        <span class="text-[9px] uppercase font-bold text-slate-500 block">Units</span>
+        <span class="font-black text-slate-900 dark:text-white truncate block">
+          {{ quantity | number:'1.2-4' }} {{ state.selectedQuote()!.symbol.replace('USDT','') }}
+        </span>
+      </div>
+      <div class="p-1.5 rounded-lg bg-white/60 dark:bg-black/20 border border-slate-200/60 dark:border-white/5">
+        <span class="text-[9px] uppercase font-bold text-slate-500 block">Required Margin</span>
+        <span class="font-black text-emerald-600 dark:text-emerald-400 truncate block">
+          \${{ marginRequired() | number:'1.2-2' }}
+        </span>
+      </div>
+      <div class="p-1.5 rounded-lg bg-white/60 dark:bg-black/20 border border-slate-200/60 dark:border-white/5">
+        <span class="text-[9px] uppercase font-bold text-slate-500 block">% Margin Used</span>
+        <span class="font-black text-blue-600 dark:text-blue-400 truncate block">
+          {{ balancePercentage() | number:'1.2-2' }}%
+        </span>
+      </div>
+      <div class="p-1.5 rounded-lg bg-white/60 dark:bg-black/20 border border-slate-200/60 dark:border-white/5">
+        <span class="text-[9px] uppercase font-bold text-slate-500 block">Total Notional</span>
+        <span class="font-black text-brand-600 dark:text-brand-400 truncate block">
+          \${{ notionalValue() | number:'1.2-2' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leverage Multiplier (1x to 250x) -->
+  <div class="mb-3.5 p-3 rounded-2xl bg-slate-100/90 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 space-y-1.5">
+    <div class="flex items-center justify-between text-xs font-semibold">
+      <span class="text-slate-700 dark:text-slate-300 flex items-center gap-1.5 font-bold">
+        <i class="fa-solid fa-gauge-high text-amber-500"></i>
+        <span>Leverage Multiplier</span>
+      </span>
+      <span class="text-brand-600 dark:text-brand-400 font-black font-mono text-xs bg-brand-500/10 px-2 py-0.5 rounded-md">
+        {{ leverage() }}x
+      </span>
+    </div>
+
+    <input
+      type="range"
+      min="1"
+      max="250"
+      step="1"
+      [ngModel]="leverage()"
+      (ngModelChange)="leverage.set($event); recalculateFromMode()"
+      class="w-full accent-brand-500 cursor-pointer h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none"
+    />
+
+    <!-- Leverage Presets (1x to 250x) -->
+    <div class="flex justify-between text-[10px] text-slate-600 dark:text-slate-400 font-mono font-bold">
+      <span (click)="leverage.set(1); recalculateFromMode()" class="cursor-pointer hover:text-brand-500">1x</span>
+      <span (click)="leverage.set(10); recalculateFromMode()" class="cursor-pointer hover:text-brand-500">10x</span>
+      <span (click)="leverage.set(25); recalculateFromMode()" class="cursor-pointer hover:text-brand-500">25x</span>
+      <span (click)="leverage.set(50); recalculateFromMode()" class="cursor-pointer hover:text-brand-500">50x</span>
+      <span (click)="leverage.set(100); recalculateFromMode()" class="cursor-pointer hover:text-brand-500">100x</span>
+      <span (click)="leverage.set(250); recalculateFromMode()" class="cursor-pointer hover:text-brand-500 text-rose-500 font-black">250x</span>
+    </div>
+  </div>
+
+  <!-- Risk Management (TP & SL with R:R Presets & Dynamic Multi-TP Levels) -->
+  <div class="space-y-2 mb-3.5">
+    <div class="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+      <span class="flex items-center gap-1">
+        <i class="fa-solid fa-shield-halved text-brand-500 text-[10px]"></i>
+        <span>Target & Protection</span>
+      </span>
+
+      <!-- Multi-TP Toggle -->
+      <button
+        type="button"
+        (click)="isMultiTp.update(v => !v)"
+        class="text-[10px] font-bold px-2 py-0.5 rounded-md border transition-colors cursor-pointer"
+        [ngClass]="isMultiTp()
+          ? 'bg-brand-600 text-white border-brand-500 shadow-xs'
+          : 'bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-white/10'"
+      >
+        {{ isMultiTp() ? 'Multi-Level Active' : 'Single TP' }}
+      </button>
+    </div>
+
+    <!-- R:R Presets -->
+    <div class="flex items-center gap-1 pb-1">
+      <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider shrink-0">R:R:</span>
+      @for (rr of [1, 1.5, 2, 3, 4]; track rr) {
+        <button
+          type="button"
+          (click)="applyRiskReward(rr)"
+          class="flex-1 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 dark:bg-white/5 dark:hover:bg-white/10 dark:text-slate-300 dark:border-white/10 transition-colors"
+        >
+          1:{{ rr }}
+        </button>
+      }
+    </div>
+
+    <!-- Stop Loss & Primary Take Profit Inputs -->
+    <div class="grid grid-cols-2 gap-2">
+      <!-- Stop Loss -->
+      <div>
+        <label class="block text-[11px] font-bold text-rose-600 dark:text-rose-400 mb-1 flex items-center gap-1">
+          <i class="fa-solid fa-shield-halved text-[10px]"></i> Stop Loss
+        </label>
+        <input
+          type="number"
+          step="any"
+          [(ngModel)]="stopLoss"
+          placeholder="Stop $"
+          class="glass-input w-full px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold text-rose-700 dark:text-rose-300 placeholder-slate-400"
+        />
+      </div>
+
+      <!-- Take Profit (Primary) -->
+      <div>
+        <label class="block text-[11px] font-bold text-emerald-600 dark:text-emerald-400 mb-1 flex items-center gap-1">
+          <i class="fa-solid fa-bullseye text-[10px]"></i> Take Profit
+        </label>
+        <input
+          type="number"
+          step="any"
+          [(ngModel)]="takeProfit"
+          placeholder="Target $"
+          class="glass-input w-full px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold text-emerald-700 dark:text-emerald-300 placeholder-slate-400"
+        />
+      </div>
+    </div>
+
+    <!-- Dynamic Multi-Level Take Profit (User can Add and Remove Levels) -->
+    @if (isMultiTp()) {
+      <div class="p-2.5 rounded-xl bg-slate-100/90 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 space-y-2 text-xs">
+        <div class="flex items-center justify-between">
+          <div class="text-[10px] font-black uppercase tracking-wider text-slate-500">
+            Multi-Level Targets
+          </div>
+          <button
+            type="button"
+            (click)="addTpLevel()"
+            class="text-[10px] px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white transition-colors font-bold inline-flex items-center gap-1 cursor-pointer"
+          >
+            <i class="fa-solid fa-plus text-[8px]"></i> Add Level
+          </button>
+        </div>
+
+        <div class="space-y-1.5">
+          @for (target of tpTargets; track target.id; let idx = $index) {
+            <div class="flex items-center gap-2">
+              <span class="w-8 text-[11px] font-black text-emerald-600 dark:text-emerald-400 font-mono">
+                TP{{ target.id }}
+              </span>
+              <div class="relative flex-1">
+                <span class="absolute left-2 top-1.5 text-slate-400 font-mono text-[10px]">$</span>
+                <input
+                  type="number"
+                  step="any"
+                  [(ngModel)]="target.price"
+                  [placeholder]="'Price ' + target.id"
+                  class="glass-input w-full pl-5 pr-2 py-1 rounded-lg text-xs font-mono font-bold text-slate-900 dark:text-white"
+                />
+              </div>
+              <div class="flex items-center gap-0.5 w-16 shrink-0">
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  [(ngModel)]="target.percent"
+                  class="glass-input w-11 px-1 py-1 rounded-lg text-xs font-mono font-bold text-center text-slate-900 dark:text-white"
+                />
+                <span class="text-[10px] font-bold text-slate-400">%</span>
+              </div>
+              <!-- Remove Level Button (Enabled if > 1 level) -->
+              <button
+                type="button"
+                [disabled]="tpTargets.length <= 1"
+                (click)="removeTpLevel(idx)"
+                class="p-1 text-slate-400 hover:text-rose-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                title="Remove level"
+              >
+                <i class="fa-solid fa-xmark text-xs"></i>
+              </button>
+            </div>
+          }
+        </div>
+
+        <div class="flex justify-between items-center text-[10px] font-bold text-slate-500 pt-1 border-t border-slate-200/60 dark:border-white/5">
+          <span>Total Allocation:</span>
+          <span
+            class="font-mono font-black"
+            [ngClass]="totalTpAllocation() === 100 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-500'"
+          >
+            {{ totalTpAllocation() }}% {{ totalTpAllocation() !== 100 ? '(Must be 100%)' : '' }}
+          </span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Account Margin Telemetry -->
+  <div class="p-3 rounded-xl bg-slate-100/90 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-xs space-y-1.5 mb-3.5 font-mono">
+    <div class="flex justify-between text-slate-600 dark:text-slate-400">
+      <span>Notional Value</span>
+      <span class="text-slate-900 dark:text-white font-bold">\${{ notionalValue() | number:'1.2-2' }}</span>
+    </div>
+    <div class="flex justify-between text-slate-600 dark:text-slate-400">
+      <span>Required Margin</span>
+      <span class="text-brand-600 dark:text-brand-400 font-bold">\${{ marginRequired() | number:'1.2-2' }}</span>
+    </div>
+    <div class="flex justify-between text-slate-600 dark:text-slate-400">
+      <span>Free Account Margin</span>
+      <span class="text-slate-800 dark:text-slate-300 font-semibold">\${{ freeMargin() | number:'1.2-2' }}</span>
+    </div>
+  </div>
+
+  <!-- Execute Order Button ("Execute" text requested) -->
+  <button
+    type="button"
+    (click)="submitOrder()"
+    [disabled]="quantity <= 0 || marginRequired() > freeMargin() || state.isLoading()"
+    class="w-full h-11 rounded-xl text-white font-black text-xs uppercase tracking-wider flex items-center justify-between px-4 transition-all duration-200 cursor-pointer shadow-lg disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden active:scale-[0.99]"
+    [ngClass]="side() === TradingOrderSide.Buy
+      ? 'bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 shadow-[0_0_20px_rgba(16,185,129,0.35)]'
+      : 'bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 shadow-[0_0_20px_rgba(244,63,94,0.35)]'"
+  >
+    <!-- Top inner highlight line -->
+    <div class="absolute top-0 left-0 right-0 h-[1px] bg-white/30"></div>
+
+    <div class="flex items-center gap-2">
+      <i class="fa-solid" [ngClass]="side() === TradingOrderSide.Buy ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'"></i>
+      <span>Execute</span>
+    </div>
+
+    <div class="flex items-center gap-1.5 font-mono text-[11px] bg-black/20 px-2 py-0.5 rounded-lg">
+      <span class="text-white/80">Margin:</span>
+      <span class="font-bold">\${{ marginRequired() | number:'1.2-2' }}</span>
+    </div>
+  </button>
+</div>

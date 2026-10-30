@@ -1,0 +1,51 @@
+<div class="glass-card glass-specular p-4 relative overflow-hidden flex flex-col justify-between">
+  <!-- Glow Accent -->
+  <div
+    class="absolute -right-6 -bottom-6 w-24 h-24 rounded-full blur-2xl pointer-events-none opacity-20"
+    [ngClass]="glowBgClass()"
+  ></div>
+
+  <div class="flex items-center justify-between">
+    <span class="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+      {{ label() }}
+    </span>
+    @if (icon()) {
+      <div
+        class="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
+        [ngClass]="iconWrapperClass()"
+      >
+        <i [class]="icon()"></i>
+      </div>
+    }
+  </div>
+
+  <div class="mt-2 flex items-baseline gap-2">
+    <div class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white truncate">
+      {{ value() }}
+    </div>
+    @if (unit()) {
+      <span class="text-xs text-slate-600 dark:text-slate-400 font-medium">{{ unit() }}</span>
+    }
+  </div>
+
+  @if (subtext() || badgeText()) {
+    <div class="mt-2.5 flex items-center gap-2 text-xs">
+      @if (badgeText()) {
+        <span
+          class="inline-flex items-center px-1.5 py-0.5 rounded font-semibold text-[11px]"
+          [ngClass]="badgeClasses()"
+        >
+          @if (trend() === 'up') {
+            <i class="fa-solid fa-arrow-trend-up mr-1 text-[10px]"></i>
+          } @else if (trend() === 'down') {
+            <i class="fa-solid fa-arrow-trend-down mr-1 text-[10px]"></i>
+          }
+          {{ badgeText() }}
+        </span>
+      }
+      @if (subtext()) {
+        <span class="text-slate-600 dark:text-slate-400 truncate">{{ subtext() }}</span>
+      }
+    </div>
+  }
+</div>

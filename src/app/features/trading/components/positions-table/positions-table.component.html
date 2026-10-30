@@ -1,0 +1,127 @@
+<div class="glass-card flex flex-col h-full overflow-hidden p-4">
+  <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-200/80 dark:border-white/10">
+    <div class="flex items-center gap-2">
+      <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+        <i class="fa-solid fa-crosshairs text-brand-500"></i>
+        Active Positions
+      </h3>
+      <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-200/80 text-brand-700 dark:bg-white/10 dark:text-brand-400">
+        {{ state.openPositions().length }}
+      </span>
+    </div>
+
+    <div class="text-xs font-mono text-slate-600 dark:text-slate-400">
+      Unrealized PnL:
+      <span
+        class="font-bold ml-1"
+        [ngClass]="state.totalUnrealizedPnl() >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'"
+      >
+        {{ state.totalUnrealizedPnl() | pnlFormat }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Table View for Desktop / Tablet -->
+  <div class="overflow-x-auto -mx-4 px-4">
+    <table class="w-full text-left text-xs font-mono">
+      <thead>
+        <tr class="text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-white/10 uppercase tracking-wider text-[11px]">
+          <th class="py-2 font-semibold">Instrument</th>
+          <th class="py-2 font-semibold">Side / Lev</th>
+          <th class="py-2 font-semibold">Size</th>
+          <th class="py-2 font-semibold">Entry</th>
+          <th class="py-2 font-semibold">Mark</th>
+          <th class="py-2 font-semibold">SL / TP</th>
+          <th class="py-2 font-semibold text-right">PnL (USD)</th>
+          <th class="py-2 font-semibold text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-200/60 dark:divide-white/5">
+        @for (pos of state.openPositions(); track pos.id) {
+          <tr class="hover:bg-slate-100/70 dark:hover:bg-white/5 transition-colors group">
+            <!-- Instrument -->
+            <td class="py-3 font-bold text-slate-900 dark:text-white font-sans flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full" [ngClass]="pos.unrealizedPnl >= 0 ? 'bg-emerald-500' : 'bg-rose-500'"></span>
+              {{ pos.symbol }}
+            </td>
+
+            <!-- Side & Leverage -->
+            <td class="py-3">
+              <div class="flex items-center gap-1.5">
+                <app-glass-badge [variant]="pos.side === TradingOrderSide.Buy ? 'bullish' : 'bearish'">
+                  {{ pos.side === TradingOrderSide.Buy ? 'BUY' : 'SELL' }}
+                </app-glass-badge>
+                <span class="text-slate-600 dark:text-slate-400 font-semibold">{{ pos.leverage }}x</span>
+              </div>
+            </td>
+
+            <!-- Size -->
+            <td class="py-3 text-slate-800 dark:text-slate-200 font-medium">{{ pos.quantity | number:'1.2-4' }}</td>
+
+            <!-- Entry Price -->
+            <td class="py-3 text-slate-700 dark:text-slate-300 font-medium">{{ pos.entryPrice | number:'1.2-4' }}</td>
+
+            <!-- Current Price -->
+            <td class="py-3 font-semibold text-slate-900 dark:text-white">{{ pos.currentPrice | number:'1.2-4' }}</td>
+
+            <!-- SL / TP -->
+            <td class="py-3 text-[11px]">
+              <div class="flex flex-col">
+                <span class="text-emerald-600 dark:text-emerald-400">TP: {{ pos.takeProfit ? (pos.takeProfit | number:'1.2-2') : 'None' }}</span>
+                <span class="text-rose-600 dark:text-rose-400">SL: {{ pos.stopLoss ? (pos.stopLoss | number:'1.2-2') : 'None' }}</span>
+              </div>
+            </td>
+
+            <!-- Unrealized PnL -->
+            <td class="py-3 text-right">
+              <div class="flex flex-col items-end">
+                <span
+                  class="font-bold text-sm"
+                  [ngClass]="pos.unrealizedPnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'"
+                >
+                  {{ pos.unrealizedPnl | pnlFormat }}
+                </span>
+                <span
+                  class="text-[10px]"
+                  [ngClass]="pos.unrealizedPnl >= 0 ? 'text-emerald-600 dark:text-emerald-500' : 'text-rose-600 dark:text-rose-500'"
+                >
+                  ({{ (pos.unrealizedPnl / pos.initialMargin) * 100 | number:'1.2-2' }}%)
+                </span>
+              </div>
+            </td>
+
+            <!-- Actions -->
+            <td class="py-3 text-right space-x-2">
+              <button
+                type="button"
+                (click)="modifyClicked.emit(pos)"
+                title="Modify SL/TP"
+                class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-950 border border-slate-200 dark:bg-white/5 dark:hover:bg-white/15 dark:text-slate-300 dark:hover:text-white dark:border-transparent transition-colors"
+              >
+                <i class="fa-solid fa-pen-to-square text-xs"></i>
+              </button>
+
+              <button
+                type="button"
+                (click)="state.closePosition({ positionId: pos.id, symbol: pos.symbol })"
+                title="Market Close Position"
+                class="px-2.5 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-700 dark:text-rose-300 border border-rose-500/30 text-xs font-semibold transition-colors"
+              >
+                Close
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="py-8 text-center text-slate-500 dark:text-slate-400 font-sans">
+              <div class="flex flex-col items-center justify-center gap-2">
+                <i class="fa-solid fa-chart-line text-2xl text-slate-400 dark:text-slate-600"></i>
+                <p class="text-xs">No active positions open right now.</p>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
