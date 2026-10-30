@@ -1,6 +1,7 @@
 export interface Environment {
   production: boolean;
   apiBaseUrl: string;
+  apiUrl?: string;
   apiVersion: string;
   signalrHubUrl: string;
   vapidPublicKey: string;

@@ -246,7 +246,7 @@ export class AuthService {
     this.currentUser.set(null);
   }
 
-  private handleAuthSuccess(token: string, refreshToken?: string, fallbackUser?: Partial<UserSession>): void {
+  public handleAuthSuccess(token: string, refreshToken?: string, fallbackUser?: Partial<UserSession>): void {
     this.tokenStorage.setTokens(token, refreshToken);
     this.token.set(token);
     const user = this.resolveUserSession(token, fallbackUser);

@@ -1,0 +1,23 @@
+name: azuretest-frontend
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: azuretest-frontend
+    restart: unless-stopped
+    ports:
+      - "8090:80"
+    networks:
+      - app-azuretest-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  app-azuretest-network:
+    external: true
+    name: azuretest_app-azuretest-network
