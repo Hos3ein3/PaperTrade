@@ -26,6 +26,11 @@ jobs:
       - name: Build and Start
         run: |
           cd "$DEPLOY_DIR"
+          for img in node:24-alpine nginx:alpine; do
+            for i in 1 2 3; do
+              docker pull $img && break || (echo "Retry $i for $img..." && sleep 5)
+            done
+          done
           docker compose build
           docker compose up -d --remove-orphans
 
