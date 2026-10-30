@@ -34,6 +34,7 @@ export class Url {
     ResetBalance: 'trading/account/reset',
     WatchlistToggle: 'trading/watchlist/toggle',
     ExecuteJson: 'trading/execute',
+    LeverageBracket: 'trading/leverage-bracket',
   } as const;
 
   public static readonly Forex = {

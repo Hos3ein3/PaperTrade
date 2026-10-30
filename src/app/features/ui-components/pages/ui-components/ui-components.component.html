@@ -231,37 +231,36 @@
 
         <!-- 2. Checkboxes -->
         <div class="space-y-3">
-          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
-            Checkbox Controls
-          </label>
-          <div class="space-y-2 p-3 rounded-2xl bg-slate-100/80 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
-            <label class="flex items-center gap-2.5 text-xs text-slate-800 dark:text-slate-200 cursor-pointer">
-              <input
-                type="checkbox"
-                [(ngModel)]="checkbox1"
-                class="rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500 w-4 h-4 cursor-pointer"
-              />
-              <span class="font-medium">Enable Stop Loss protection</span>
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
+              Glass Checkbox Controls
             </label>
+            <span class="text-[10px] font-mono text-brand-500 font-bold">
+              Active: {{ checkbox1 ? 'StopLoss' : '' }} {{ checkbox2 ? 'Rebalance' : '' }}
+            </span>
+          </div>
+          <div class="space-y-2.5 p-3 rounded-2xl bg-slate-100/80 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 flex flex-col">
+            <app-glass-checkbox
+              [(ngModel)]="checkbox1"
+              label="Enable Stop Loss protection"
+              description="Automatically trigger stops when loss hits target"
+              color="brand"
+            ></app-glass-checkbox>
 
-            <label class="flex items-center gap-2.5 text-xs text-slate-800 dark:text-slate-200 cursor-pointer">
-              <input
-                type="checkbox"
-                [(ngModel)]="checkbox2"
-                class="rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500 w-4 h-4 cursor-pointer"
-              />
-              <span class="font-medium">Auto-rebalance collateral</span>
-            </label>
+            <app-glass-checkbox
+              [(ngModel)]="checkbox2"
+              label="Auto-rebalance collateral"
+              description="Preserve margin safety buffers dynamically"
+              color="bullish"
+            ></app-glass-checkbox>
 
-            <label class="flex items-center gap-2.5 text-xs text-slate-800 dark:text-slate-200 cursor-pointer">
-              <input
-                type="checkbox"
-                [checked]="checkboxIndeterminate"
-                (change)="checkboxIndeterminate = !checkboxIndeterminate"
-                class="rounded border-slate-300 dark:border-slate-700 text-amber-500 focus:ring-amber-500 w-4 h-4 cursor-pointer"
-              />
-              <span class="font-medium">Multi-tenant isolation</span>
-            </label>
+            <app-glass-checkbox
+              [(ngModel)]="checkbox3"
+              [indeterminate]="checkboxIndeterminate"
+              label="Multi-tenant isolation"
+              description="Indeterminate pending consensus verification"
+              color="amber"
+            ></app-glass-checkbox>
           </div>
         </div>
 
@@ -291,31 +290,100 @@
 
         <!-- 4. Radio Group Cards -->
         <div class="space-y-2">
-          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
-            Radio Group Cards
-          </label>
-          <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
+              Glass Radio Cards
+            </label>
+            <span class="text-[10px] font-mono text-brand-500 font-bold uppercase">
+              Selected: {{ selectedRadio }}
+            </span>
+          </div>
+          <div class="space-y-2">
             @for (opt of radioOptions; track opt.value) {
-              <label
-                (click)="selectedRadio = opt.value"
-                class="flex items-start gap-2.5 p-2 rounded-xl border transition-all cursor-pointer"
-                [ngClass]="selectedRadio === opt.value
-                  ? 'bg-brand-500/10 border-brand-500/40 text-brand-900 dark:text-brand-300 shadow-2xs'
-                  : 'bg-slate-100/60 dark:bg-white/5 border-slate-200/80 dark:border-white/10 hover:border-slate-300'"
-              >
-                <input
-                  type="radio"
-                  name="demoRadioGroup"
-                  [value]="opt.value"
-                  [checked]="selectedRadio === opt.value"
-                  class="mt-0.5 text-brand-600 focus:ring-brand-500 cursor-pointer"
-                />
-                <div>
-                  <div class="text-xs font-bold">{{ opt.label }}</div>
-                  <div class="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">{{ opt.desc }}</div>
-                </div>
-              </label>
+              <app-glass-radio
+                name="demoRadioGroup"
+                [value]="opt.value"
+                [(ngModel)]="selectedRadio"
+                variant="card"
+                [label]="opt.label"
+                [description]="opt.desc"
+                color="brand"
+              ></app-glass-radio>
             }
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Control Variants Showcase: Inline Radios & Checkbox Sizes -->
+      <div class="pt-4 border-t border-slate-200/80 dark:border-white/10 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Inline Standard Radios -->
+        <div class="space-y-2">
+          <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+            Inline Standard Radio Buttons (Variant: Default)
+          </span>
+          <div class="flex flex-wrap items-center gap-4 p-3 rounded-2xl bg-slate-100/60 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
+            <app-glass-radio
+              name="inlineDemo"
+              value="standard"
+              [(ngModel)]="selectedRadio"
+              variant="default"
+              label="Standard"
+              color="brand"
+            ></app-glass-radio>
+
+            <app-glass-radio
+              name="inlineDemo"
+              value="bullish"
+              [(ngModel)]="selectedRadio"
+              variant="default"
+              label="Bullish Long"
+              color="bullish"
+            ></app-glass-radio>
+
+            <app-glass-radio
+              name="inlineDemo"
+              value="bearish"
+              [(ngModel)]="selectedRadio"
+              variant="default"
+              label="Bearish Short"
+              color="bearish"
+            ></app-glass-radio>
+          </div>
+        </div>
+
+        <!-- Checkbox Sizes & States -->
+        <div class="space-y-2">
+          <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+            Checkbox Sizes &amp; Disabled State
+          </span>
+          <div class="flex flex-wrap items-center gap-4 p-3 rounded-2xl bg-slate-100/60 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
+            <app-glass-checkbox
+              [checked]="true"
+              size="sm"
+              label="Small (sm)"
+              color="brand"
+            ></app-glass-checkbox>
+
+            <app-glass-checkbox
+              [checked]="true"
+              size="md"
+              label="Medium (md)"
+              color="bullish"
+            ></app-glass-checkbox>
+
+            <app-glass-checkbox
+              [checked]="true"
+              size="lg"
+              label="Large (lg)"
+              color="amber"
+            ></app-glass-checkbox>
+
+            <app-glass-checkbox
+              [checked]="false"
+              [disabled]="true"
+              size="md"
+              label="Disabled"
+            ></app-glass-checkbox>
           </div>
         </div>
       </div>
@@ -338,47 +406,46 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- 1. Date, Time, DateTime Pickers -->
         <div class="space-y-3">
-          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
-            Date &amp; Time Pickers
-          </label>
-          <div class="space-y-2.5">
-            <!-- Date Picker -->
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
+              Glass Date &amp; Time Pickers
+            </label>
+            <span class="text-[10px] font-mono text-brand-500 font-bold">
+              Live Interactive
+            </span>
+          </div>
+          <div class="space-y-3">
+            <!-- Custom Date Picker -->
             <div>
-              <span class="text-[11px] font-semibold text-slate-500 block mb-1">Date Picker</span>
-              <div class="relative">
-                <i class="fa-solid fa-calendar absolute left-3 top-2.5 text-xs text-slate-400"></i>
-                <input
-                  type="date"
-                  [(ngModel)]="selectedDate"
-                  class="glass-input w-full pl-9 pr-3 py-1.5 rounded-xl text-xs text-slate-900 dark:text-white font-mono font-bold"
-                />
-              </div>
+              <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block mb-1">
+                Custom Glass Date Picker
+              </span>
+              <app-glass-date-picker
+                [(ngModel)]="selectedDate"
+                placeholder="Select settlement date..."
+              ></app-glass-date-picker>
             </div>
 
-            <!-- Time Picker -->
+            <!-- Custom Time Picker -->
             <div>
-              <span class="text-[11px] font-semibold text-slate-500 block mb-1">Time Picker</span>
-              <div class="relative">
-                <i class="fa-solid fa-clock absolute left-3 top-2.5 text-xs text-slate-400"></i>
-                <input
-                  type="time"
-                  [(ngModel)]="selectedTime"
-                  class="glass-input w-full pl-9 pr-3 py-1.5 rounded-xl text-xs text-slate-900 dark:text-white font-mono font-bold"
-                />
-              </div>
+              <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block mb-1">
+                Custom Glass Time Picker
+              </span>
+              <app-glass-time-picker
+                [(ngModel)]="selectedTime"
+                placeholder="Select order execution time..."
+              ></app-glass-time-picker>
             </div>
 
-            <!-- DateTime Picker -->
+            <!-- Custom Combined DateTime Picker -->
             <div>
-              <span class="text-[11px] font-semibold text-slate-500 block mb-1">DateTime Combined Picker</span>
-              <div class="relative">
-                <i class="fa-solid fa-business-time absolute left-3 top-2.5 text-xs text-slate-400"></i>
-                <input
-                  type="datetime-local"
-                  [(ngModel)]="selectedDateTime"
-                  class="glass-input w-full pl-9 pr-3 py-1.5 rounded-xl text-xs text-slate-900 dark:text-white font-mono font-bold"
-                />
-              </div>
+              <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block mb-1">
+                Custom Glass DateTime Picker
+              </span>
+              <app-glass-date-time-picker
+                [(ngModel)]="selectedDateTime"
+                placeholder="Select timestamp..."
+              ></app-glass-date-time-picker>
             </div>
           </div>
         </div>

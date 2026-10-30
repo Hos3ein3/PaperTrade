@@ -11,11 +11,12 @@ import {
 } from '../../models/outbox.models';
 import { CetDatePipe } from '../../../../shared/pipes/cet-date.pipe';
 import { ToastService } from '../../../../core/notifications/toast.service';
+import { GlassDateTimePickerComponent } from '../../../../shared/components/glass-date-time-picker/glass-date-time-picker.component';
 
 @Component({
   selector: 'app-outbox-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule, CetDatePipe],
+  imports: [CommonModule, FormsModule, CetDatePipe, GlassDateTimePickerComponent],
   templateUrl: './outbox-admin.component.html',
 })
 export class OutboxAdminComponent implements OnInit {

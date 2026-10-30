@@ -64,6 +64,23 @@ export interface TradingQuote {
   isWatchlisted: boolean;
   isSimulated?: boolean;
   feedSource?: string;
+  maxLeverage?: number;
+}
+
+export interface TradingBracketTier {
+  bracket: number;
+  initialLeverage: number;
+  notionalCap: number;
+  notionalFloor: number;
+  maintMarginRatio: number;
+  cum: number;
+}
+
+export interface TradingLeverageBracket {
+  symbol: string;
+  maxLeverage: number;
+  minLeverage: number;
+  brackets: TradingBracketTier[];
 }
 
 export interface TradingPosition {

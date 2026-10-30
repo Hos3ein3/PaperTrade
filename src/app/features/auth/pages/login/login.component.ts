@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ThemeService } from '../../../../core/theme/theme.service';
 import { GlassButtonComponent } from '../../../../shared/components/glass-button/glass-button.component';
+import { GlassCheckboxComponent } from '../../../../shared/components/glass-checkbox/glass-checkbox.component';
 import { ToastService } from '../../../../core/notifications/toast.service';
 import { environment } from '../../../../../environments/environment';
 
@@ -14,7 +15,7 @@ declare const google: any;
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, GlassButtonComponent],
+  imports: [CommonModule, FormsModule, RouterModule, GlassButtonComponent, GlassCheckboxComponent],
   templateUrl: './login.component.html'
 })
 export class LoginComponent implements AfterViewInit {

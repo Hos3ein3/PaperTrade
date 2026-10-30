@@ -17,6 +17,7 @@ import {
   CancelOrderRequest,
   ResetBalanceRequest,
   TradingHistoryResponse,
+  TradingLeverageBracket,
 } from '../models/trading.models';
 
 @Injectable({
@@ -71,6 +72,31 @@ export class TradingApiService {
     );
   }
 
+  public getLeverageBracket(symbol: string): Observable<TradingLeverageBracket> {
+    const url = Url.build(Url.Trading.LeverageBracket, undefined, { symbol });
+    return this.http.get<any>(url).pipe(
+      map((res: any) => {
+        const val = res?.value ?? res?.data ?? res;
+        return {
+          symbol: val?.symbol ?? symbol,
+          maxLeverage: Number(val?.maxLeverage ?? 250),
+          minLeverage: Number(val?.minLeverage ?? 1),
+          brackets: val?.brackets ?? [],
+        } as TradingLeverageBracket;
+      }),
+      catchError(() => {
+        const s = (symbol || '').toUpperCase();
+        const max = s === 'BTCUSDT' ? 125 : (s === 'ETHUSDT' ? 100 : (['SOLUSDT', 'BNBUSDT', 'XRPUSDT', 'DOGEUSDT', 'ADAUSDT', 'LINKUSDT'].includes(s) ? 75 : 250));
+        return of({
+          symbol,
+          maxLeverage: max,
+          minLeverage: 1,
+          brackets: [],
+        } as TradingLeverageBracket);
+      })
+    );
+  }
+
   public searchAssets(query: string): Observable<TradingQuote[]> {
     if (!query || !query.trim()) {
       return of([]);
@@ -91,6 +117,7 @@ export class TradingApiService {
           volume24h: Number(item.volume24h ?? item.Volume24h ?? 0),
           isWatchlisted: Boolean(item.isWatchlisted ?? item.IsWatchlisted),
           isSimulated: Boolean(item.isSimulated ?? item.IsSimulated),
+          maxLeverage: item.maxLeverage ? Number(item.maxLeverage) : (item.MaxLeverage ? Number(item.MaxLeverage) : undefined),
         }));
       }),
       catchError((err) => {

@@ -9,11 +9,12 @@ import {
 } from '../../models/audit-log.models';
 import { CetDatePipe } from '../../../../shared/pipes/cet-date.pipe';
 import { ToastService } from '../../../../core/notifications/toast.service';
+import { GlassDateTimePickerComponent } from '../../../../shared/components/glass-date-time-picker/glass-date-time-picker.component';
 
 @Component({
   selector: 'app-audit-log',
   standalone: true,
-  imports: [CommonModule, FormsModule, CetDatePipe],
+  imports: [CommonModule, FormsModule, CetDatePipe, GlassDateTimePickerComponent],
   templateUrl: './audit-log.component.html',
 })
 export class AuditLogComponent implements OnInit {

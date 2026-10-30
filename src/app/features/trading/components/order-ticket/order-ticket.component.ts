@@ -1,12 +1,14 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TradingStateService } from '../../services/trading-state.service';
+import { TradingApiService } from '../../services/trading-api.service';
 import {
   AssetClass,
   TradingOrderSide,
   TradingOrderType,
   PlaceOrderRequest,
+  TradingLeverageBracket,
 } from '../../models/trading.models';
 
 export interface TakeProfitTarget {
@@ -25,6 +27,7 @@ export type SizingMode = 'units' | 'margin' | 'percent' | 'total';
 })
 export class OrderTicketComponent {
   public readonly state = inject(TradingStateService);
+  private readonly api = inject(TradingApiService);
   protected readonly Math = Math;
 
   public readonly TradingOrderSide = TradingOrderSide;
@@ -34,6 +37,20 @@ export class OrderTicketComponent {
   public readonly orderType = signal<TradingOrderType>(TradingOrderType.Market);
   public readonly leverage = signal<number>(10);
   public readonly isMultiTp = signal<boolean>(false);
+  public readonly leverageBracket = signal<TradingLeverageBracket | null>(null);
+
+  public readonly maxLeverage = computed(() => {
+    return this.leverageBracket()?.maxLeverage ?? this.state.selectedQuote()?.maxLeverage ?? 250;
+  });
+
+  public readonly leveragePresets = computed(() => {
+    const max = this.maxLeverage();
+    const candidates = [1, 2, 5, 10, 20, 25, 50, 75, 100, 125, 150, 200, 250];
+    const filtered = candidates.filter((c) => c < max);
+    if (!filtered.includes(1)) filtered.unshift(1);
+    filtered.push(max);
+    return Array.from(new Set(filtered)).sort((a, b) => a - b);
+  });
 
   // Sizing Mode: 'units' | 'margin' | 'percent' | 'total' (Matching MVC Trade.cshtml)
   public sizeMode: SizingMode = 'percent';
@@ -89,6 +106,22 @@ export class OrderTicketComponent {
 
   constructor() {
     this.recalculateFromMode();
+
+    // Load dynamic leverage bracket whenever the selected symbol changes
+    effect(() => {
+      const sym = this.state.selectedSymbol();
+      if (sym) {
+        this.api.getLeverageBracket(sym).subscribe((bracket) => {
+          this.leverageBracket.set(bracket);
+          // Clamp current leverage if it now exceeds the new max
+          const max = bracket.maxLeverage;
+          if (this.leverage() > max) {
+            this.leverage.set(max);
+            this.recalculateFromMode();
+          }
+        });
+      }
+    });
   }
 
   public setSizingMode(mode: SizingMode): void {

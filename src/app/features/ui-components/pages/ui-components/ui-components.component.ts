@@ -3,6 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { GlassButtonComponent } from '../../../../shared/components/glass-button/glass-button.component';
+import { GlassCheckboxComponent } from '../../../../shared/components/glass-checkbox/glass-checkbox.component';
+import { GlassRadioComponent } from '../../../../shared/components/glass-radio/glass-radio.component';
+import { GlassDatePickerComponent } from '../../../../shared/components/glass-date-picker/glass-date-picker.component';
+import { GlassTimePickerComponent } from '../../../../shared/components/glass-time-picker/glass-time-picker.component';
+import { GlassDateTimePickerComponent } from '../../../../shared/components/glass-date-time-picker/glass-date-time-picker.component';
 
 export interface SampleUser {
   id: number;
@@ -16,7 +21,17 @@ export interface SampleUser {
 @Component({
   selector: 'app-ui-components',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, GlassButtonComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    GlassButtonComponent,
+    GlassCheckboxComponent,
+    GlassRadioComponent,
+    GlassDatePickerComponent,
+    GlassTimePickerComponent,
+    GlassDateTimePickerComponent,
+  ],
   templateUrl: './ui-components.component.html',
 })
 export class UiComponentsComponent {
@@ -36,6 +51,7 @@ export class UiComponentsComponent {
   // 3. Checkbox
   public checkbox1 = true;
   public checkbox2 = false;
+  public checkbox3 = false;
   public checkboxIndeterminate = true;
 
   // 4. Radio Group

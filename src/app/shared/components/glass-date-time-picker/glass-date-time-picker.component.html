@@ -1,0 +1,220 @@
+<div class="relative w-full text-left select-none">
+  <!-- Optional Label -->
+  @if (label()) {
+    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+      {{ label() }}
+    </label>
+  }
+
+  <!-- Trigger Box -->
+  <div
+    (click)="toggleOpen()"
+    [tabindex]="isDisabled ? -1 : 0"
+    class="glass-input flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-xs font-mono transition-all cursor-pointer border"
+    [ngClass]="[
+      isOpen() ? 'border-brand-500 shadow-[0_0_15px_-2px_rgba(20,184,166,0.3)]' : 'border-slate-200 dark:border-white/10 hover:border-brand-500/50',
+      isDisabled ? 'opacity-50 cursor-not-allowed' : ''
+    ]"
+  >
+    <div class="flex items-center gap-2.5 truncate">
+      <i class="fa-solid fa-business-time text-brand-500 text-xs shrink-0"></i>
+      @if (displayDateTime()) {
+        <span class="font-bold text-slate-900 dark:text-white truncate">
+          {{ displayDateTime() }}
+        </span>
+      } @else {
+        <span class="text-slate-400 truncate">
+          {{ placeholder() }}
+        </span>
+      }
+    </div>
+
+    <div class="flex items-center gap-1.5 shrink-0">
+      @if (value() && !isDisabled) {
+        <button
+          type="button"
+          (click)="clear($event)"
+          title="Clear date and time"
+          class="w-5 h-5 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
+        >
+          <i class="fa-solid fa-xmark text-[10px]"></i>
+        </button>
+      }
+      <i
+        class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200"
+        [class.rotate-180]="isOpen()"
+      ></i>
+    </div>
+  </div>
+
+  <!-- Popup Dropdown -->
+  @if (isOpen()) {
+    <div
+      class="absolute left-0 mt-2 z-50 w-72 p-3.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-200/90 dark:border-white/10 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
+    >
+      <!-- Mode Tabs (Date vs Time) -->
+      <div class="flex items-center gap-1 p-1 mb-3 rounded-xl bg-slate-100/90 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
+        <button
+          type="button"
+          (click)="activeTab.set('date'); $event.stopPropagation()"
+          class="flex-1 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+          [ngClass]="activeTab() === 'date' ? 'bg-brand-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+        >
+          <i class="fa-solid fa-calendar text-[10px]"></i>
+          <span>Date</span>
+          @if (selectedDate()) {
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 ml-0.5"></span>
+          }
+        </button>
+
+        <button
+          type="button"
+          (click)="activeTab.set('time'); $event.stopPropagation()"
+          class="flex-1 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+          [ngClass]="activeTab() === 'time' ? 'bg-brand-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+        >
+          <i class="fa-solid fa-clock text-[10px]"></i>
+          <span>Time ({{ pad(selectedHour()) }}:{{ pad(selectedMinute()) }})</span>
+        </button>
+      </div>
+
+      <!-- TAB 1: DATE CALENDAR -->
+      @if (activeTab() === 'date') {
+        <!-- Month Navigation -->
+        <div class="flex items-center justify-between mb-2.5 px-1">
+          <button
+            type="button"
+            (click)="prevMonth($event)"
+            class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
+          >
+            <i class="fa-solid fa-chevron-left text-xs"></i>
+          </button>
+          <div class="text-xs font-bold text-slate-900 dark:text-white tracking-wide">
+            {{ monthNames[viewMonth()] }} {{ viewYear() }}
+          </div>
+          <button
+            type="button"
+            (click)="nextMonth($event)"
+            class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
+          >
+            <i class="fa-solid fa-chevron-right text-xs"></i>
+          </button>
+        </div>
+
+        <!-- Week Days -->
+        <div class="grid grid-cols-7 gap-1 text-center mb-1">
+          @for (day of weekDays; track day) {
+            <div class="text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 py-0.5">
+              {{ day }}
+            </div>
+          }
+        </div>
+
+        <!-- Day Cells Grid -->
+        <div class="grid grid-cols-7 gap-1">
+          @for (item of calendarDays(); track item.dateString) {
+            <button
+              type="button"
+              (click)="selectDay(item, $event)"
+              class="h-7 rounded-xl text-xs font-medium flex items-center justify-center relative transition-all duration-150 cursor-pointer"
+              [ngClass]="[
+                item.isSelected
+                  ? 'bg-brand-600 text-white font-bold shadow-[0_0_12px_rgba(20,184,166,0.5)] scale-105 z-10'
+                  : item.isCurrentMonth
+                    ? 'text-slate-800 dark:text-slate-100 hover:bg-brand-500/15 hover:text-brand-600 dark:hover:text-brand-300'
+                    : 'text-slate-400/60 dark:text-slate-600 hover:bg-slate-100 dark:hover:bg-white/5'
+              ]"
+            >
+              {{ item.dayNumber }}
+              @if (item.isToday && !item.isSelected) {
+                <span class="absolute bottom-0.5 w-1 h-1 rounded-full bg-brand-500"></span>
+              }
+            </button>
+          }
+        </div>
+      }
+
+      <!-- TAB 2: TIME SELECTOR -->
+      @if (activeTab() === 'time') {
+        <div class="space-y-3 py-1">
+          <div class="flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl bg-slate-100/80 dark:bg-white/5 border border-slate-200/60 dark:border-white/10">
+            <span class="text-base font-mono font-black text-brand-600 dark:text-brand-400">
+              {{ pad(selectedHour()) }}
+            </span>
+            <span class="text-base font-mono font-black text-slate-400 animate-pulse">:</span>
+            <span class="text-base font-mono font-black text-brand-600 dark:text-brand-400">
+              {{ pad(selectedMinute()) }}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-center">
+            <!-- Hours -->
+            <div>
+              <div class="text-[10px] font-bold uppercase text-slate-400 mb-1">Hours</div>
+              <div class="max-h-36 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+                @for (h of hoursList; track h) {
+                  <button
+                    type="button"
+                    (click)="selectHour(h, $event)"
+                    class="w-full py-0.5 rounded-lg text-xs font-mono font-medium transition-all cursor-pointer"
+                    [ngClass]="selectedHour() === h
+                      ? 'bg-brand-600 text-white font-bold shadow-[0_0_8px_rgba(20,184,166,0.4)]'
+                      : 'text-slate-700 dark:text-slate-200 hover:bg-brand-500/10 hover:text-brand-600 dark:hover:text-brand-300'"
+                  >
+                    {{ pad(h) }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Minutes -->
+            <div>
+              <div class="text-[10px] font-bold uppercase text-slate-400 mb-1">Minutes</div>
+              <div class="max-h-36 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+                @for (m of minutesList; track m) {
+                  <button
+                    type="button"
+                    (click)="selectMinute(m, $event)"
+                    class="w-full py-0.5 rounded-lg text-xs font-mono font-medium transition-all cursor-pointer"
+                    [ngClass]="selectedMinute() === m
+                      ? 'bg-brand-600 text-white font-bold shadow-[0_0_8px_rgba(20,184,166,0.4)]'
+                      : 'text-slate-700 dark:text-slate-200 hover:bg-brand-500/10 hover:text-brand-600 dark:hover:text-brand-300'"
+                  >
+                    {{ pad(m) }}
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Bottom Footer -->
+      <div class="flex items-center justify-between border-t border-slate-200/80 dark:border-white/10 mt-3 pt-2 text-[11px]">
+        <button
+          type="button"
+          (click)="setNow($event)"
+          class="font-bold text-brand-600 dark:text-brand-400 hover:underline cursor-pointer"
+        >
+          Set Now
+        </button>
+        @if (value()) {
+          <button
+            type="button"
+            (click)="clear($event); isOpen.set(false)"
+            class="text-rose-500 hover:underline cursor-pointer"
+          >
+            Clear
+          </button>
+        }
+        <button
+          type="button"
+          (click)="isOpen.set(false)"
+          class="font-bold text-brand-600 dark:text-brand-400 hover:underline cursor-pointer ml-auto"
+        >
+          Done
+        </button>
+      </div>
+    </div>
+  }
+</div>

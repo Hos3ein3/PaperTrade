@@ -100,16 +100,12 @@
       </div>
 
       <div class="flex items-center justify-between text-xs pt-1">
-        <label class="flex items-center gap-2 cursor-pointer text-slate-600 dark:text-slate-400">
-          <input
-            type="checkbox"
-            [(ngModel)]="rememberMe"
-            name="rememberMe"
-            tabindex="3"
-            class="rounded border-slate-300 dark:border-slate-700 text-brand-500 focus:ring-brand-500 cursor-pointer"
-          />
-          <span>Keep me signed in</span>
-        </label>
+        <app-glass-checkbox
+          [(ngModel)]="rememberMe"
+          name="rememberMe"
+          label="Keep me signed in"
+          color="brand"
+        ></app-glass-checkbox>
 
         <a
           routerLink="/auth/forgot-password"

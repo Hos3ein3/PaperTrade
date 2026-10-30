@@ -1,0 +1,145 @@
+<div class="relative w-full text-left select-none">
+  <!-- Optional Label -->
+  @if (label()) {
+    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+      {{ label() }}
+    </label>
+  }
+
+  <!-- Input Trigger Box -->
+  <div
+    (click)="toggleOpen()"
+    [tabindex]="isDisabled ? -1 : 0"
+    class="glass-input flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-xs font-mono transition-all cursor-pointer border"
+    [ngClass]="[
+      isOpen() ? 'border-brand-500 shadow-[0_0_15px_-2px_rgba(20,184,166,0.3)]' : 'border-slate-200 dark:border-white/10 hover:border-brand-500/50',
+      isDisabled ? 'opacity-50 cursor-not-allowed' : ''
+    ]"
+  >
+    <div class="flex items-center gap-2.5 truncate">
+      <i class="fa-solid fa-clock text-brand-500 text-xs shrink-0"></i>
+      @if (displayTime()) {
+        <span class="font-bold text-slate-900 dark:text-white truncate">
+          {{ displayTime() }}
+        </span>
+      } @else {
+        <span class="text-slate-400 truncate">
+          {{ placeholder() }}
+        </span>
+      }
+    </div>
+
+    <div class="flex items-center gap-1.5 shrink-0">
+      @if (value() && !isDisabled) {
+        <button
+          type="button"
+          (click)="clear($event)"
+          title="Clear time"
+          class="w-5 h-5 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
+        >
+          <i class="fa-solid fa-xmark text-[10px]"></i>
+        </button>
+      }
+      <i
+        class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200"
+        [class.rotate-180]="isOpen()"
+      ></i>
+    </div>
+  </div>
+
+  <!-- Time Picker Floating Popup -->
+  @if (isOpen()) {
+    <div
+      class="absolute left-0 mt-2 z-50 w-64 p-3.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-200/90 dark:border-white/10 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
+    >
+      <!-- Time Display Header -->
+      <div class="flex items-center justify-center gap-2 mb-3 py-1.5 px-3 rounded-xl bg-slate-100/80 dark:bg-white/5 border border-slate-200/60 dark:border-white/10">
+        <span class="text-lg font-mono font-black text-brand-600 dark:text-brand-400">
+          {{ pad(selectedHour()) }}
+        </span>
+        <span class="text-lg font-mono font-black text-slate-400 animate-pulse">:</span>
+        <span class="text-lg font-mono font-black text-brand-600 dark:text-brand-400">
+          {{ pad(selectedMinute()) }}
+        </span>
+      </div>
+
+      <!-- Quick Presets -->
+      <div class="flex flex-wrap gap-1 mb-3">
+        @for (p of presets; track p.label) {
+          <button
+            type="button"
+            (click)="applyPreset(p.time, $event)"
+            class="px-2 py-1 rounded-lg text-[10px] font-bold bg-slate-100 dark:bg-white/5 hover:bg-brand-500/15 hover:text-brand-600 dark:hover:text-brand-300 text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-white/10 transition-colors cursor-pointer"
+          >
+            {{ p.label }}
+          </button>
+        }
+      </div>
+
+      <!-- Scrollable Columns (Hours & Minutes) -->
+      <div class="grid grid-cols-2 gap-2 text-center border-t border-b border-slate-200/80 dark:border-white/10 py-2">
+        <!-- Hours Column -->
+        <div>
+          <div class="text-[10px] font-bold uppercase text-slate-400 mb-1">Hours</div>
+          <div class="max-h-40 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+            @for (h of hoursList; track h) {
+              <button
+                type="button"
+                (click)="selectHour(h, $event)"
+                class="w-full py-1 rounded-lg text-xs font-mono font-medium transition-all cursor-pointer"
+                [ngClass]="[
+                  selectedHour() === h
+                    ? 'bg-brand-600 text-white font-bold shadow-[0_0_10px_rgba(20,184,166,0.4)]'
+                    : 'text-slate-700 dark:text-slate-200 hover:bg-brand-500/10 hover:text-brand-600 dark:hover:text-brand-300'
+                ]"
+              >
+                {{ pad(h) }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Minutes Column -->
+        <div>
+          <div class="text-[10px] font-bold uppercase text-slate-400 mb-1">Minutes</div>
+          <div class="max-h-40 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+            @for (m of minutesList(); track m) {
+              <button
+                type="button"
+                (click)="selectMinute(m, $event)"
+                class="w-full py-1 rounded-lg text-xs font-mono font-medium transition-all cursor-pointer"
+                [ngClass]="[
+                  selectedMinute() === m
+                    ? 'bg-brand-600 text-white font-bold shadow-[0_0_10px_rgba(20,184,166,0.4)]'
+                    : 'text-slate-700 dark:text-slate-200 hover:bg-brand-500/10 hover:text-brand-600 dark:hover:text-brand-300'
+                ]"
+              >
+                {{ pad(m) }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="flex items-center justify-between mt-3 pt-1 text-[11px]">
+        @if (value()) {
+          <button
+            type="button"
+            (click)="clear($event); isOpen.set(false)"
+            class="text-rose-500 hover:underline cursor-pointer"
+          >
+            Clear
+          </button>
+        }
+        <button
+          type="button"
+          (click)="isOpen.set(false)"
+          class="font-bold text-brand-600 dark:text-brand-400 hover:underline cursor-pointer ml-auto"
+        >
+          Done
+        </button>
+      </div>
+    </div>
+  }
+</div>

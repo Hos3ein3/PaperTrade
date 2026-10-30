@@ -1,0 +1,59 @@
+<div
+  role="radio"
+  [attr.aria-checked]="isChecked"
+  [attr.aria-disabled]="isDisabled"
+  [tabindex]="isDisabled ? -1 : 0"
+  (click)="select($event)"
+  (keydown)="onKeyDown($event)"
+  class="group outline-none select-none transition-all"
+  [ngClass]="[
+    variant() === 'card'
+      ? 'flex items-start gap-3 p-3 rounded-2xl border cursor-pointer ' + getCardClass()
+      : 'inline-flex items-start gap-2.5 cursor-pointer'
+  ]"
+  [class.cursor-not-allowed]="isDisabled"
+  [class.opacity-50]="isDisabled"
+>
+  <!-- Radio Circle Indicator -->
+  <div
+    class="w-5 h-5 rounded-full border flex items-center justify-center shrink-0 transition-all duration-200 mt-0.5"
+    [ngClass]="getRingClass()"
+  >
+    <div
+      class="w-2.5 h-2.5 rounded-full transition-all duration-200"
+      [ngClass]="[getDotClass(), isChecked ? 'scale-100 opacity-100' : 'scale-0 opacity-0']"
+    ></div>
+  </div>
+
+  <!-- Icon (Optional for card mode) -->
+  @if (icon()) {
+    <div
+      class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors"
+      [ngClass]="isChecked ? 'bg-brand-500/20 text-brand-600 dark:text-brand-400' : 'bg-slate-200/60 dark:bg-white/10 text-slate-500 dark:text-slate-400'"
+    >
+      <i [class]="icon() + ' text-sm'"></i>
+    </div>
+  }
+
+  <!-- Label & Description -->
+  <div class="flex-1 min-w-0 text-left">
+    @if (label()) {
+      <div
+        class="text-xs font-bold transition-colors"
+        [ngClass]="[
+          variant() === 'card'
+            ? (isChecked ? 'text-brand-900 dark:text-brand-200' : 'text-slate-800 dark:text-slate-200')
+            : 'text-slate-800 dark:text-slate-200 group-hover:text-brand-600 dark:group-hover:text-brand-400'
+        ]"
+      >
+        {{ label() }}
+      </div>
+    }
+    @if (description()) {
+      <div class="text-[11px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5">
+        {{ description() }}
+      </div>
+    }
+    <ng-content></ng-content>
+  </div>
+</div>
