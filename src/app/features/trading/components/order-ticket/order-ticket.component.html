@@ -13,7 +13,7 @@
         : 'border-transparent text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-white/5'"
     >
       <i class="fa-solid fa-arrow-trend-up"></i>
-      <span>Buy / Long</span>
+      <span>Long</span>
     </button>
 
     <button
@@ -25,7 +25,7 @@
         : 'border-transparent text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-white/5'"
     >
       <i class="fa-solid fa-arrow-trend-down"></i>
-      <span>Sell / Short</span>
+      <span>Short</span>
     </button>
   </div>
 
@@ -230,7 +230,7 @@
       [max]="maxLeverage()"
       step="1"
       [ngModel]="leverage()"
-      (ngModelChange)="leverage.set($event); recalculateFromMode()"
+      (ngModelChange)="onLeverageChange($event)"
       class="w-full accent-brand-500 cursor-pointer h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none"
     />
 
@@ -238,7 +238,7 @@
     <div class="flex justify-between text-[10px] text-slate-600 dark:text-slate-400 font-mono font-bold">
       @for (preset of leveragePresets(); track preset) {
         <span
-          (click)="leverage.set(preset); recalculateFromMode()"
+          (click)="onLeverageChange(preset)"
           [class.text-rose-500]="preset === maxLeverage()"
           [class.font-black]="preset === maxLeverage()"
           class="cursor-pointer hover:text-brand-500"
@@ -263,58 +263,100 @@
         [ngClass]="isMultiTp()
           ? 'bg-brand-600 text-white border-brand-500 shadow-xs'
           : 'bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-white/10'"
+        [class.opacity-50]="!enableTp()"
+        [disabled]="!enableTp()"
       >
         {{ isMultiTp() ? 'Multi-Level Active' : 'Single TP' }}
       </button>
     </div>
 
-    <!-- R:R Presets -->
-    <div class="flex items-center gap-1 pb-1">
-      <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider shrink-0">R:R:</span>
-      @for (rr of [1, 1.5, 2, 3, 4]; track rr) {
-        <button
-          type="button"
-          (click)="applyRiskReward(rr)"
-          class="flex-1 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 dark:bg-white/5 dark:hover:bg-white/10 dark:text-slate-300 dark:border-white/10 transition-colors"
-        >
-          1:{{ rr }}
-        </button>
-      }
-    </div>
+    <!-- R:R Presets (only shown when both SL and TP are enabled) -->
+    @if (enableSl() && enableTp()) {
+      <div class="flex items-center gap-1 pb-1">
+        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider shrink-0">R:R:</span>
+        @for (rr of [1, 1.5, 2, 3, 4]; track rr) {
+          <button
+            type="button"
+            (click)="applyRiskReward(rr)"
+            class="flex-1 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 dark:bg-white/5 dark:hover:bg-white/10 dark:text-slate-300 dark:border-white/10 transition-colors"
+          >
+            1:{{ rr }}
+          </button>
+        }
+      </div>
+    }
 
-    <!-- Stop Loss & Primary Take Profit Inputs -->
+    <!-- Stop Loss & Primary Take Profit Inputs with On/Off Switches -->
     <div class="grid grid-cols-2 gap-2">
       <!-- Stop Loss -->
       <div>
-        <label class="block text-[11px] font-bold text-rose-600 dark:text-rose-400 mb-1 flex items-center gap-1">
-          <i class="fa-solid fa-shield-halved text-[10px]"></i> Stop Loss
-        </label>
-        <input
-          type="number"
-          step="any"
-          [(ngModel)]="stopLoss"
-          placeholder="Stop $"
-          class="glass-input w-full px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold text-rose-700 dark:text-rose-300 placeholder-slate-400"
-        />
+        <div class="flex items-center justify-between mb-1">
+          <label class="text-[11px] font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1">
+            <i class="fa-solid fa-shield-halved text-[10px]"></i> Stop Loss
+          </label>
+          <!-- SL Toggle Switch -->
+          <div
+            (click)="enableSl.update(v => !v)"
+            class="w-8 h-[18px] rounded-full transition-colors relative cursor-pointer shrink-0"
+            [ngClass]="enableSl() ? 'bg-rose-500' : 'bg-slate-300 dark:bg-slate-700'"
+          >
+            <div
+              class="w-3.5 h-3.5 rounded-full bg-white absolute top-[2px] left-[2px] transition-transform shadow-sm"
+              [ngClass]="enableSl() ? 'translate-x-3.5' : 'translate-x-0'"
+            ></div>
+          </div>
+        </div>
+        @if (enableSl()) {
+          <input
+            type="number"
+            step="any"
+            [(ngModel)]="stopLoss"
+            placeholder="Stop $"
+            class="glass-input w-full px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold text-rose-700 dark:text-rose-300 placeholder-slate-400"
+          />
+        } @else {
+          <div class="glass-input w-full px-2.5 py-1.5 rounded-lg text-xs font-mono text-slate-400 italic opacity-50">
+            Disabled
+          </div>
+        }
       </div>
 
       <!-- Take Profit (Primary) -->
       <div>
-        <label class="block text-[11px] font-bold text-emerald-600 dark:text-emerald-400 mb-1 flex items-center gap-1">
-          <i class="fa-solid fa-bullseye text-[10px]"></i> Take Profit
-        </label>
-        <input
-          type="number"
-          step="any"
-          [(ngModel)]="takeProfit"
-          placeholder="Target $"
-          class="glass-input w-full px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold text-emerald-700 dark:text-emerald-300 placeholder-slate-400"
-        />
+        <div class="flex items-center justify-between mb-1">
+          <label class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+            <i class="fa-solid fa-bullseye text-[10px]"></i> Take Profit
+          </label>
+          <!-- TP Toggle Switch -->
+          <div
+            (click)="enableTp.update(v => !v)"
+            class="w-8 h-[18px] rounded-full transition-colors relative cursor-pointer shrink-0"
+            [ngClass]="enableTp() ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'"
+          >
+            <div
+              class="w-3.5 h-3.5 rounded-full bg-white absolute top-[2px] left-[2px] transition-transform shadow-sm"
+              [ngClass]="enableTp() ? 'translate-x-3.5' : 'translate-x-0'"
+            ></div>
+          </div>
+        </div>
+        @if (enableTp()) {
+          <input
+            type="number"
+            step="any"
+            [(ngModel)]="takeProfit"
+            placeholder="Target $"
+            class="glass-input w-full px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold text-emerald-700 dark:text-emerald-300 placeholder-slate-400"
+          />
+        } @else {
+          <div class="glass-input w-full px-2.5 py-1.5 rounded-lg text-xs font-mono text-slate-400 italic opacity-50">
+            Disabled
+          </div>
+        }
       </div>
     </div>
 
     <!-- Dynamic Multi-Level Take Profit (User can Add and Remove Levels) -->
-    @if (isMultiTp()) {
+    @if (isMultiTp() && enableTp()) {
       <div class="p-2.5 rounded-xl bg-slate-100/90 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 space-y-2 text-xs">
         <div class="flex items-center justify-between">
           <div class="text-[10px] font-black uppercase tracking-wider text-slate-500">

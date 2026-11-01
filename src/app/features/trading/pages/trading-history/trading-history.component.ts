@@ -208,4 +208,21 @@ export class TradingHistoryComponent implements OnInit {
       ? exit - t.entryPrice
       : t.entryPrice - exit;
   }
+
+  /**
+   * Parses the multipleTakeProfitsJson field into an array of TP targets.
+   * Returns an array of { price, percentage } objects.
+   */
+  public parseTpTargets(trade: TradingHistoryItem): { price: number; percentage: number }[] {
+    if (!trade.multipleTakeProfitsJson) return [];
+    try {
+      const parsed = JSON.parse(trade.multipleTakeProfitsJson);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((t: any) => t.price && t.price > 0);
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  }
 }

@@ -37,6 +37,8 @@ export class OrderTicketComponent {
   public readonly orderType = signal<TradingOrderType>(TradingOrderType.Market);
   public readonly leverage = signal<number>(10);
   public readonly isMultiTp = signal<boolean>(false);
+  public readonly enableSl = signal<boolean>(true);
+  public readonly enableTp = signal<boolean>(true);
   public readonly leverageBracket = signal<TradingLeverageBracket | null>(null);
 
   public readonly maxLeverage = computed(() => {
@@ -171,6 +173,22 @@ export class OrderTicketComponent {
     }
   }
 
+  /**
+   * Called specifically when the leverage slider changes.
+   * In percent mode, keeps the same percentage (mainInputValue) and recalculates quantity.
+   * In units mode, keeps quantity fixed — only the resulting margin/percentage changes.
+   * In margin mode, recalculates with new leverage.
+   * In total mode, keeps notional fixed.
+   */
+  public onLeverageChange(newLev: number): void {
+    this.leverage.set(newLev);
+    // Only recalculate quantity if in a mode where leverage affects sizing
+    if (this.sizeMode === 'percent' || this.sizeMode === 'margin') {
+      this.recalculateFromMode();
+    }
+    // In 'units' and 'total' modes, quantity stays fixed — only margin/percentage display changes
+  }
+
   // --- Dynamic Multi-Level Take Profit Methods ---
   public addTpLevel(): void {
     const nextId = this.tpTargets.length + 1;
@@ -238,11 +256,16 @@ export class OrderTicketComponent {
     const quote = this.state.selectedQuote();
     if (!quote || this.quantity <= 0) return;
 
-    const primaryTp = this.isMultiTp()
-      ? this.tpTargets[0]?.price || this.takeProfit
-      : this.takeProfit;
+    const slEnabled = this.enableSl();
+    const tpEnabled = this.enableTp();
 
-    const multipleTakeProfitsJson = this.isMultiTp()
+    const primaryTp = tpEnabled
+      ? (this.isMultiTp()
+        ? this.tpTargets[0]?.price || this.takeProfit
+        : this.takeProfit)
+      : undefined;
+
+    const multipleTakeProfitsJson = (tpEnabled && this.isMultiTp())
       ? JSON.stringify(
           this.tpTargets
             .filter((t) => t.price && t.price > 0)
@@ -258,7 +281,7 @@ export class OrderTicketComponent {
       orderType: this.orderType(),
       quantity: this.quantity,
       price: this.orderType() === TradingOrderType.Market ? undefined : this.customPrice,
-      stopLoss: this.stopLoss,
+      stopLoss: slEnabled ? this.stopLoss : undefined,
       takeProfit: primaryTp,
       leverage: this.leverage(),
       multipleTakeProfitsJson,

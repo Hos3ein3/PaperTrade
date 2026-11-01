@@ -206,6 +206,8 @@
             <th class="py-2.5 font-bold">Units</th>
             <th class="py-2.5 font-bold">Entry Price</th>
             <th class="py-2.5 font-bold">Close Trigger Price</th>
+            <th class="py-2.5 font-bold">SL</th>
+            <th class="py-2.5 font-bold">TP</th>
             <th class="py-2.5 font-bold">Start Time (CET)</th>
             <th class="py-2.5 font-bold">End Time (CET)</th>
             <th class="py-2.5 font-bold">Outcome</th>
@@ -245,6 +247,37 @@
               <!-- Close Trigger Price -->
               <td class="py-3 text-slate-900 dark:text-white font-bold">
                 \${{ trade.closePrice || trade.currentPrice | number:'1.2-4' }}
+              </td>
+
+              <!-- Stop Loss -->
+              <td class="py-3">
+                @if (trade.stopLoss) {
+                  <span class="font-mono text-rose-600 dark:text-rose-400 font-bold">
+                    \${{ trade.stopLoss | number:'1.2-2' }}
+                  </span>
+                } @else {
+                  <span class="text-slate-400 text-[10px] italic">—</span>
+                }
+              </td>
+
+              <!-- Take Profit (single or multi) -->
+              <td class="py-3">
+                @if (parseTpTargets(trade).length > 0) {
+                  <div class="flex flex-col gap-0.5">
+                    @for (tp of parseTpTargets(trade); track tp.price) {
+                      <span class="inline-flex items-center gap-1 font-mono text-emerald-600 dark:text-emerald-400 text-[11px] font-bold">
+                        \${{ tp.price | number:'1.2-2' }}
+                        <span class="text-[9px] text-slate-400 font-normal">({{ tp.percentage }}%)</span>
+                      </span>
+                    }
+                  </div>
+                } @else if (trade.takeProfit) {
+                  <span class="font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                    \${{ trade.takeProfit | number:'1.2-2' }}
+                  </span>
+                } @else {
+                  <span class="text-slate-400 text-[10px] italic">—</span>
+                }
               </td>
 
               <!-- Start Time in Central Europe Time (CET) -->
@@ -289,7 +322,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="10" class="py-8 text-center text-slate-600 dark:text-slate-400 font-sans">
+              <td colspan="12" class="py-8 text-center text-slate-600 dark:text-slate-400 font-sans">
                 No closed trades found matching criteria.
               </td>
             </tr>
